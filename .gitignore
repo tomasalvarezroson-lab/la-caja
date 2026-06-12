@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# editores
+.vscode/
+.idea/
+*.swp
+
+# datos sensibles / temporales
+*.csv
+!scripts/*.example.csv
+*.xlsx
+.env
+
+# logs
+*.log

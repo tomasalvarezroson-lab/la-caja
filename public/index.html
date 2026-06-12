@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>La Caja · Control Financiero 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div><h1>La Caja</h1><div class="sub">Control financiero · Proyecto Independizarme</div></div>
+    </div>
+    <div class="top-actions">
+      <span class="tag-ars">Todo en ARS · USD @ $1.420</span>
+      <button class="btn-q" id="qBtn" title="Ver insights vs última actualización">?</button>
+      <button class="btn btn-ghost" id="exportBtn">⤓ Exportar CSV</button>
+      <button class="btn btn-primary" id="loadBtn">↑ Cargar planilla</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none"/>
+      <span class="msg" id="msg"></span>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="insights" id="insights">
+    <h3>Insights · evolutivo</h3>
+    <div class="when" id="insWhen"></div>
+    <div id="insightsBody"></div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi k-ing"><div class="lab">Ingresos</div><div class="val" id="kIng">—</div><div class="hint">sin reintegros / préstamos</div></div>
+    <div class="kpi k-gas"><div class="lab">Gastos de consumo</div><div class="val" id="kGas">—</div><div class="hint" id="kGasH">—</div></div>
+    <div class="kpi k-marie"><div class="lab">Deuda Marie pagada</div><div class="val" id="kMarie">—</div><div class="hint">en dólares</div></div>
+    <div class="kpi k-usd"><div class="lab">Compra de dólares</div><div class="val" id="kUsd">—</div><div class="hint">dolarización / ahorro</div></div>
+    <div class="kpi k-tasa"><div class="lab">Tasa de ahorro</div><div class="val" id="kTasa">—</div><div class="hint">(Marie + USD) / ingresos</div></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="fgroup"><span class="flab">Mes</span><div class="chips" id="fMes"></div></div>
+    <div class="fgroup"><span class="flab">Tipo</span><div class="chips" id="fTipo"></div></div>
+    <div class="fgroup"><span class="flab">Categoría</span>
+      <div class="dd" id="catDD">
+        <button class="dd-btn" id="catDDbtn">Todas <span class="cnt" id="catCnt" style="display:none"></span> ▾</button>
+        <div class="dd-panel" id="catPanel" style="display:none"></div>
+      </div>
+    </div>
+    <div class="fgroup"><span class="flab">Medio</span><div class="chips" id="fMed"></div></div>
+    <div class="fgroup"><span class="flab">Día</span>
+      <input type="date" class="dt-input" id="dDesde" title="Desde"/>
+      <span style="color:var(--faint);font-size:12px">→</span>
+      <input type="date" class="dt-input" id="dHasta" title="Hasta"/>
+    </div>
+    <button class="clr" id="clrBtn">Limpiar filtros</button>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="grid2">
+    <div class="card">
+      <div class="ct">Ingresos vs Egresos por mes</div>
+      <div class="chart-h"><canvas id="chBar"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Egresos por categoría · consumo</div>
+      <div class="chart-h-sm"><canvas id="chDonut"></canvas></div>
+    </div>
+  </div>
+
+  <!-- EVO -->
+  <div class="card full">
+    <div class="ct">Evolución · gasto de consumo y tasa de ahorro</div>
+    <div class="evo-h"><canvas id="chEvo"></canvas></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card full">
+    <div class="tbl-top">
+      <div class="ct" style="margin:0" id="tblTitle">Movimientos</div>
+      <input class="search" id="search" placeholder="Buscar concepto, contraparte, categoría…"/>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead id="thead"><tr>
+          <th data-k="fecha">Fecha</th><th data-k="mes">Mes</th><th data-k="tipo">Tipo</th>
+          <th data-k="cat">Categoría</th><th data-k="concepto">Concepto</th><th data-k="medio">Medio</th>
+          <th data-k="monto" style="text-align:right">Monto</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">La Caja · datos Ene–Jun 2026 · conciliado contra resúmenes Santander + Mercado Pago · montos en ARS (USD @ $1.420)</div>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>
