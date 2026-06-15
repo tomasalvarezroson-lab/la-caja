@@ -1,41 +1,32 @@
 /**
  * ContaBot — Registro de gastos/ingresos por Telegram con clasificación Claude.
- * Arquitectura: Telegram → Apps Script (este código) → Claude API → Google Sheets.
+ * Arquitectura: Telegram (polling) → Apps Script → Claude API → Google Sheets.
  * Costo cero de infraestructura. Sin Railway, sin backend externo.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * SETUP (una sola vez):
- *  1. Editor Apps Script → Configuración del proyecto → Propiedades del script.
- *     Agregá estas propiedades (o corré setupProperties() abajo con tus valores):
- *       TELEGRAM_TOKEN   → token de @BotFather
- *       ANTHROPIC_KEY    → tu API key de Anthropic (sk-ant-...)
- *       SHEET_ID         → ID de tu Google Sheet (el de la URL .../d/SHEET_ID/edit)
- *       SHEET_NAME       → nombre de la hoja, ej: "Registro 2026"
- *       ALLOWED_CHAT_ID  → tu chat id de Telegram (para que nadie más use el bot)
- *  2. Implementar → Nueva implementación → App web → Ejecutar como: yo /
- *     Acceso: cualquiera. Copiá la URL /exec.
- *  3. Corré setWebhook() una vez (apunta Telegram a esta app).
- *  4. Corré test() para validar Sheet + Claude sin pasar por Telegram.
- *  5. Escribile al bot: "mcdonalds 12500 con visa".
+ * MODO POLLING (no webhook):
+ *  - Un trigger de tiempo corre pollUpdates() cada 1 min.
+ *  - Consulta getUpdates con offset; procesa lo nuevo; guarda el offset.
+ *  - Para activar/reactivar: correr setupPolling() una vez.
  *
- *  ¿No sabés tu ALLOWED_CHAT_ID? Dejala vacía, mandale un mensaje al bot,
- *  y miralo en Ejecuciones (Logger imprime el chatId de cada mensaje).
+ * PROPIEDADES DEL SCRIPT necesarias:
+ *   TELEGRAM_TOKEN, ANTHROPIC_KEY, SHEET_ID, SHEET_NAME, ALLOWED_CHAT_ID
  * ─────────────────────────────────────────────────────────────────────────
  */
 
 // ===== CONFIG =====
-const P = PropertiesService.getScriptProperties();
+const P            = PropertiesService.getScriptProperties();
 const TELEGRAM_TOKEN = P.getProperty('TELEGRAM_TOKEN');
 const ANTHROPIC_KEY  = P.getProperty('ANTHROPIC_KEY');
 const SHEET_ID       = P.getProperty('SHEET_ID');
 const SHEET_NAME     = P.getProperty('SHEET_NAME') || 'Registro 2026';
 const ALLOWED_CHAT   = P.getProperty('ALLOWED_CHAT_ID') || '';
 
-const MODEL = 'claude-haiku-4-5-20251001'; // rápido y barato para clasificar
-const DEFAULT_MEDIO = 'Santander - TC Visa';
-const ID_PREFIX = '26'; // prefijo de los IDs (26-0001)
+const MODEL         = 'claude-haiku-4-5-20251001';
+const DEFAULT_MEDIO = 'Santander - Débito';   // default cuando no se aclara medio
+const ID_PREFIX     = '26';
 
-// ===== CATÁLOGOS CERRADOS (deben coincidir con tu dashboard) =====
+// ===== CATÁLOGOS CERRADOS =====
 const CATS_EGRESO = ['Comida','Supermercado','Transporte','Vehículo','Servicios','Salud',
   'Educación','Entradas/Eventos','Regalos','Ropa','Actividades','Crédito/Cuotas',
   'Gastos importantes','Deuda Marie','Ahorro USD','Otros'];
@@ -50,39 +41,63 @@ const COLS = ['ID','Fecha','Hora','Mes','Tipo','Categoría','Subcat (orig)','Con
   'Asociado a','Estado','Descripción'];
 
 // ===================================================================
-// WEBHOOK
+// POLLING — consulta Telegram en vez de recibir webhook
 // ===================================================================
-function doPost(e) {
-  try {
-    const update = JSON.parse(e.postData.contents);
+function pollUpdates() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(2000)) return;
 
-    if (update.callback_query) {
-      handleCallback(update.callback_query);
-    } else if (update.message && update.message.text) {
-      const chatId = String(update.message.chat.id);
-      Logger.log('chatId=' + chatId + ' | ' + update.message.text);
-      if (ALLOWED_CHAT && chatId !== ALLOWED_CHAT) return ok(); // ignorar a terceros
-      handleMessage(update.message);
-    }
+  try {
+    const offset = parseInt(P.getProperty('TG_OFFSET') || '0', 10);
+    const url = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN +
+                '/getUpdates?timeout=0&offset=' + (offset + 1);
+    const res  = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const data = JSON.parse(res.getContentText());
+    if (!data.ok || !data.result.length) { lock.releaseLock(); return; }
+
+    let maxId = offset;
+    data.result.forEach(update => {
+      maxId = Math.max(maxId, update.update_id);
+      try {
+        if (update.callback_query) {
+          handleCallback(update.callback_query);
+        } else if (update.message && update.message.text) {
+          const chatId = String(update.message.chat.id);
+          if (ALLOWED_CHAT && chatId !== ALLOWED_CHAT) return;
+          handleMessage(update.message);
+        }
+      } catch (err) {
+        Logger.log('poll update ERROR: ' + err);
+      }
+    });
+
+    P.setProperty('TG_OFFSET', String(maxId));
   } catch (err) {
-    Logger.log('doPost ERROR: ' + err);
+    Logger.log('pollUpdates ERROR: ' + err);
+  } finally {
+    lock.releaseLock();
   }
-  return ok();
 }
-function ok() { return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT); }
+
+// Activa el polling (correr UNA vez). Borra triggers viejos y desconecta webhook.
+function setupPolling() {
+  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+  UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/deleteWebhook?drop_pending_updates=true');
+  ScriptApp.newTrigger('pollUpdates').timeBased().everyMinutes(1).create();
+  Logger.log('Polling activado: trigger cada 1 min, webhook desconectado');
+}
 
 // ===================================================================
 // MENSAJES DE TEXTO
 // ===================================================================
 function handleMessage(msg) {
   const chatId = String(msg.chat.id);
-  const text = msg.text.trim();
+  const text   = msg.text.trim();
 
-  if (text === '/start') { tgSend(chatId, msgStart()); return; }
-  if (text === '/help' || text === '/ayuda') { tgSend(chatId, msgHelp()); return; }
-  if (text === '/deshacer' || text === '/undo') { undoLast(chatId); return; }
+  if (text === '/start')                        { tgSend(chatId, msgStart()); return; }
+  if (text === '/help' || text === '/ayuda')    { tgSend(chatId, msgHelp());  return; }
+  if (text === '/deshacer' || text === '/undo') { undoLast(chatId);           return; }
 
-  // Clasificar con Claude
   let obj;
   try {
     obj = classify(text);
@@ -93,7 +108,6 @@ function handleMessage(msg) {
   obj = sanitize(obj);
   obj._hora = Utilities.formatDate(new Date(msg.date * 1000), 'America/Argentina/Buenos_Aires', 'HH:mm');
 
-  // Guardar pendiente (10 min) y pedir confirmación con botones
   CacheService.getScriptCache().put('p_' + chatId, JSON.stringify(obj), 600);
   tgSendKeyboard(chatId, resumen(obj), [
     [{ text: 'Guardar', callback_data: 'save' },
@@ -107,10 +121,10 @@ function handleMessage(msg) {
 // ===================================================================
 function handleCallback(cq) {
   const chatId = String(cq.message.chat.id);
-  const msgId = cq.message.message_id;
+  const msgId  = cq.message.message_id;
   const action = cq.data;
-  const cache = CacheService.getScriptCache();
-  const raw = cache.get('p_' + chatId);
+  const cache  = CacheService.getScriptCache();
+  const raw    = cache.get('p_' + chatId);
 
   if (action === 'cancel') {
     cache.remove('p_' + chatId);
@@ -152,20 +166,33 @@ function classify(text) {
 '    Si es Ingreso: ' + CATS_INGRESO.join(', ') + '.\n' +
 '    Si dudás, usá "Otros".\n' +
 '- "medio_pago": ELEGÍ UNO EXACTO de: ' + MEDIOS.join(', ') + '.\n' +
-'    Si el texto no aclara el medio, usá "' + DEFAULT_MEDIO + '". "visa"→"Santander - TC Visa", ' +
-'"débito"→"Santander - Débito", "mercado pago"/"mp"→"Mercado Pago - Saldo", "efectivo"/"cash"→"Efectivo", ' +
-'"dólares en el banco"→"Santander - Caja Ahorro USD".\n' +
+'    MAPEO DEL LENGUAJE DEL USUARIO (IMPORTANTE):\n' +
+'      "crédito"/"credito"/"con crédito"/"tarjeta"  → "Santander - TC Visa"\n' +
+'      "débito"/"debito"/"con débito"               → "Santander - Débito"\n' +
+'      "efectivo"/"cash"/"en efectivo"              → "Efectivo"\n' +
+'      "transferencia"/"transf"/"por transferencia" → "Santander - Caja Ahorro ARS"\n' +
+'      "mercado pago"/"mp"                          → "Mercado Pago - Saldo"\n' +
+'      "dólares en el banco"/"caja USD"             → "Santander - Caja Ahorro USD"\n' +
+'    Si el texto NO aclara ningún medio, usá SIEMPRE el default: "' + DEFAULT_MEDIO + '".\n' +
+'    NOTA: la palabra "ahorro" NO es un medio de pago ni una categoría por sí sola. ' +
+'Si aparece "ahorro" sin más contexto, IGNORALA para el medio (usá el default) y NO la interpretes como "Ahorro USD". ' +
+'Solo usá categoría "Ahorro USD" si el texto explícitamente habla de comprar/guardar dólares.\n' +
 '- "monto": número entero sin separadores. "12.500"→12500, "12,5k"→12500, "1.250.000"→1250000.\n' +
-'- "divisa": "USD" si menciona usd/u$s/dólares; si no "ARS".\n' +
-'- "cuota_n"/"cuota_tot": números si dice "en N cuotas" (ej "en 3 cuotas"→cuota_n=1,cuota_tot=3); si no, null.\n' +
-'- "reintegrable": "Si" si lo paga/comparte alguien más (ej "lo divido con", "me lo devuelve"), si no "No".\n' +
+'- "divisa": "USD" SOLO si menciona usd/u$s/dólares explícitamente; si no, "ARS". ' +
+'La palabra "ahorro" NO implica USD.\n' +
+'- "cuota_n"/"cuota_tot": números si dice "en N cuotas" (ej "en 3 cuotas"→cuota_n=1,cuota_tot=3); si no, null. ' +
+'OJO: "crédito" como medio de pago NO significa cuotas. Solo poné cuotas si el texto dice explícitamente "en N cuotas".\n' +
+'- "reintegrable": "Si" si lo paga/comparte alguien más (ej "lo divido con", "me lo devuelve", "reintegrable"), si no "No".\n' +
 '- "concepto": el comercio o concepto corto. "contraparte": persona/empresa si aplica, si no "".\n' +
 '- "descripcion": "".\n\n' +
 'Ejemplos:\n' +
-'IN: "mcdonalds 12500 con visa" OUT: {"tipo":"Egreso","categoria":"Comida","subcategoria":"Fast food","concepto":"McDonald\'s","contraparte":"McDonald\'s","monto":12500,"divisa":"ARS","medio_pago":"Santander - TC Visa","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
+'IN: "mcdonalds 12500 crédito" OUT: {"tipo":"Egreso","categoria":"Comida","subcategoria":"Fast food","concepto":"McDonald\'s","contraparte":"McDonald\'s","monto":12500,"divisa":"ARS","medio_pago":"Santander - TC Visa","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
+'IN: "restaurante 40000" OUT: {"tipo":"Egreso","categoria":"Comida","subcategoria":"Restaurante","concepto":"Restaurante","contraparte":"","monto":40000,"divisa":"ARS","medio_pago":"Santander - Débito","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
+'IN: "didi 16070" OUT: {"tipo":"Egreso","categoria":"Transporte","subcategoria":"Apps","concepto":"Didi","contraparte":"","monto":16070,"divisa":"ARS","medio_pago":"Santander - Débito","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
+'IN: "super coto 35000 transferencia" OUT: {"tipo":"Egreso","categoria":"Supermercado","subcategoria":"Supermercado","concepto":"Coto","contraparte":"Coto","monto":35000,"divisa":"ARS","medio_pago":"Santander - Caja Ahorro ARS","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
 'IN: "cobré sueldo 2418419" OUT: {"tipo":"Ingreso","categoria":"Sueldo","subcategoria":"Sueldo","concepto":"Sueldo CTA","contraparte":"Yopdev","monto":2418419,"divisa":"ARS","medio_pago":"Santander - Caja Ahorro ARS","cuota_n":null,"cuota_tot":null,"reintegrable":"No","descripcion":""}\n' +
-'IN: "nafta 64000" OUT: {"tipo":"Egreso","categoria":"Vehículo","subcategoria":"Combustible","concepto":"Nafta","contraparte":"","monto":64000,"divisa":"ARS","medio_pago":"Santander - TC Visa","cuota_n":null,"cuota_tot":null,"reintegrable":"Si","descripcion":""}\n' +
-'IN: "auriculares 90000 en 3 cuotas mercado pago" OUT: {"tipo":"Egreso","categoria":"Crédito/Cuotas","subcategoria":"Tecnología","concepto":"Auriculares","contraparte":"","monto":90000,"divisa":"ARS","medio_pago":"Mercado Pago - Saldo","cuota_n":1,"cuota_tot":3,"reintegrable":"No","descripcion":""}';
+'IN: "nafta 64000 débito" OUT: {"tipo":"Egreso","categoria":"Vehículo","subcategoria":"Combustible","concepto":"Nafta","contraparte":"","monto":64000,"divisa":"ARS","medio_pago":"Santander - Débito","cuota_n":null,"cuota_tot":null,"reintegrable":"Si","descripcion":""}\n' +
+'IN: "auriculares 90000 en 3 cuotas crédito" OUT: {"tipo":"Egreso","categoria":"Crédito/Cuotas","subcategoria":"Tecnología","concepto":"Auriculares","contraparte":"","monto":90000,"divisa":"ARS","medio_pago":"Santander - TC Visa","cuota_n":1,"cuota_tot":3,"reintegrable":"No","descripcion":""}';
 
   const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
     method: 'post',
@@ -190,29 +217,30 @@ function classify(text) {
   return JSON.parse(out.slice(s, eIdx + 1));
 }
 
-// Parseo robusto de montos (formato argentino: puntos=miles, coma=decimal)
+// ===================================================================
+// PARSEO Y SANITIZACIÓN
+// ===================================================================
 function parseMonto(v) {
   if (typeof v === 'number') return Math.abs(v);
   let s = String(v).replace(/[^0-9.,-]/g, '');
   if (s.indexOf(',') >= 0) { s = s.replace(/\./g, '').replace(',', '.'); }
   else if (s.indexOf('.') >= 0) {
     const parts = s.split('.');
-    if (parts.slice(1).every(p => p.length === 3)) s = parts.join(''); // 12.500 / 1.250.000 → miles
+    if (parts.slice(1).every(p => p.length === 3)) s = parts.join('');
   }
   return Math.abs(parseFloat(s) || 0);
 }
 
-// Forzar valores a los catálogos cerrados
 function sanitize(o) {
-  o.tipo = (String(o.tipo).toLowerCase().indexOf('ingreso') >= 0) ? 'Ingreso' : 'Egreso';
-  const lista = o.tipo === 'Ingreso' ? CATS_INGRESO : CATS_EGRESO;
+  o.tipo        = (String(o.tipo).toLowerCase().indexOf('ingreso') >= 0) ? 'Ingreso' : 'Egreso';
+  const lista   = o.tipo === 'Ingreso' ? CATS_INGRESO : CATS_EGRESO;
   if (lista.indexOf(o.categoria) < 0) o.categoria = 'Otros';
   if (MEDIOS.indexOf(o.medio_pago) < 0) o.medio_pago = DEFAULT_MEDIO;
-  o.divisa = (String(o.divisa).toUpperCase() === 'USD') ? 'USD' : 'ARS';
-  o.monto = parseMonto(o.monto);
+  o.divisa       = (String(o.divisa).toUpperCase() === 'USD') ? 'USD' : 'ARS';
+  o.monto        = parseMonto(o.monto);
   o.reintegrable = (String(o.reintegrable).toLowerCase().charAt(0) === 's') ? 'Si' : 'No';
-  o.concepto = o.concepto || '(sin concepto)';
-  o.contraparte = o.contraparte || '';
+  o.concepto     = o.concepto || '(sin concepto)';
+  o.contraparte  = o.contraparte || '';
   o.subcategoria = o.subcategoria || '';
   return o;
 }
@@ -226,6 +254,7 @@ function getSheet() {
   if (!sh) throw new Error('No existe la hoja "' + SHEET_NAME + '"');
   return sh;
 }
+
 function nextId(sh) {
   const last = sh.getLastRow();
   let max = 0;
@@ -238,30 +267,37 @@ function nextId(sh) {
   }
   return ID_PREFIX + '-' + String(max + 1).padStart(4, '0');
 }
-function saveRow(o) {
-  const sh = getSheet();
-  const id = nextId(sh);
-  const now = new Date();
-  const fecha = Utilities.formatDate(now, 'America/Argentina/Buenos_Aires', 'dd/MM/yyyy');
-  const hora = o._hora || Utilities.formatDate(now, 'America/Argentina/Buenos_Aires', 'HH:mm');
-  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const mes = meses[now.getMonth()];
 
-  // Mapear a las 18 columnas EN ORDEN
+function saveRow(o) {
+  const sh    = getSheet();
+  const id    = nextId(sh);
+  const now   = new Date();
+  const fecha = Utilities.formatDate(now, 'America/Argentina/Buenos_Aires', 'dd/MM/yyyy');
+  const hora  = o._hora || Utilities.formatDate(now, 'America/Argentina/Buenos_Aires', 'HH:mm');
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto',
+                 'Septiembre','Octubre','Noviembre','Diciembre'];
+  const mes   = meses[now.getMonth()];
+
+  // 18 columnas — orden idéntico a COLS
   const row = [
     id, fecha, hora, mes, o.tipo, o.categoria, o.subcategoria, o.concepto, o.contraparte,
     o.monto, o.divisa, o.medio_pago,
-    (o.cuota_n != null ? o.cuota_n : ''), (o.cuota_tot != null ? o.cuota_tot : ''),
+    (o.cuota_n   != null ? o.cuota_n   : ''),
+    (o.cuota_tot != null ? o.cuota_tot : ''),
     o.reintegrable, '', 'Pendiente', o.descripcion || ''
   ];
   sh.appendRow(row);
-  P.setProperty('LAST_ROW', String(sh.getLastRow())); // para /deshacer
+  P.setProperty('LAST_ROW', String(sh.getLastRow()));
   return id;
 }
+
 function undoLast(chatId) {
   const lastRow = parseInt(P.getProperty('LAST_ROW') || '0', 10);
   const sh = getSheet();
-  if (!lastRow || lastRow > sh.getLastRow() || lastRow < 2) { tgSend(chatId, 'No hay nada reciente para deshacer.'); return; }
+  if (!lastRow || lastRow > sh.getLastRow() || lastRow < 2) {
+    tgSend(chatId, 'No hay nada reciente para deshacer.');
+    return;
+  }
   const id = sh.getRange(lastRow, 1).getValue();
   sh.deleteRow(lastRow);
   P.deleteProperty('LAST_ROW');
@@ -272,6 +308,7 @@ function undoLast(chatId) {
 // FORMATO
 // ===================================================================
 function nf(n) { return Number(n).toLocaleString('es-AR'); }
+
 function resumen(o) {
   const sign = o.tipo === 'Egreso' ? '−' : '+';
   let t = o.tipo + ' · ' + sign + '$' + nf(o.monto) + ' ' + o.divisa + '\n';
@@ -282,14 +319,17 @@ function resumen(o) {
   if (o.reintegrable === 'Si') t += '\nReintegrable: sí';
   return t;
 }
+
 function msgStart() {
   return 'ContaBot. Mandame un gasto o ingreso en texto y lo registro.\n\n' +
-    'Ejemplos:\n• mcdonalds 12500 con visa\n• uber 8500\n• cobré sueldo 2418419\n• nafta 64000\n• auriculares 90000 en 3 cuotas mercado pago\n\n' +
+    'Ejemplos:\n• mcdonalds 12500 crédito\n• uber 8500\n• cobré sueldo 2418419\n• nafta 64000 débito\n• super coto 35000 transferencia\n\n' +
+    'Medios: crédito, débito, efectivo, transferencia. Si no aclarás, asumo débito.\n' +
     'Te muestro un resumen y confirmás antes de guardar.\n\nComandos: /ayuda · /deshacer';
 }
+
 function msgHelp() {
   return 'Cómo funciona:\n1) Escribís el movimiento.\n2) Lo interpreto y te muestro el resumen.\n3) Tocás Guardar / Corregir / Cancelar.\n\n' +
-    'Medios: visa, débito, amex, mercado pago, efectivo, dólares.\n' +
+    'Medios de pago:\n• crédito → TC Visa\n• débito → Débito\n• efectivo → Efectivo\n• transferencia → Caja Ahorro ARS\n• (sin aclarar) → Débito\n\n' +
     'Cuotas: "en 3 cuotas".  Reintegrable: "lo divido con...".\n\n' +
     'Categorías de gasto:\n' + CATS_EGRESO.join(' · ') + '\n\n/deshacer borra el último registro.';
 }
@@ -303,42 +343,17 @@ function tgApi(method, payload) {
     payload: JSON.stringify(payload)
   });
 }
-function tgSend(chatId, text) { tgApi('sendMessage', { chat_id: chatId, text: text }); }
-function tgSendKeyboard(chatId, text, kb) {
-  tgApi('sendMessage', { chat_id: chatId, text: text, reply_markup: { inline_keyboard: kb } });
-}
-function tgEdit(chatId, msgId, text) {
-  tgApi('editMessageText', { chat_id: chatId, message_id: msgId, text: text });
-}
-function tgAnswer(cbId, text) { tgApi('answerCallbackQuery', { callback_query_id: cbId, text: text }); }
+function tgSend(chatId, text)             { tgApi('sendMessage',       { chat_id: chatId, text: text }); }
+function tgSendKeyboard(chatId, text, kb) { tgApi('sendMessage',       { chat_id: chatId, text: text, reply_markup: { inline_keyboard: kb } }); }
+function tgEdit(chatId, msgId, text)      { tgApi('editMessageText',   { chat_id: chatId, message_id: msgId, text: text }); }
+function tgAnswer(cbId, text)             { tgApi('answerCallbackQuery', { callback_query_id: cbId, text: text }); }
 
 // ===================================================================
-// UTILIDADES DE SETUP (correr a mano una vez)
+// UTILIDADES
 // ===================================================================
-function setupProperties() {
-  // Completá y corré UNA vez. Después borrá los valores de acá por seguridad.
-  P.setProperties({
-    TELEGRAM_TOKEN: 'PEGAR_TOKEN_BOTFATHER',
-    ANTHROPIC_KEY: 'sk-ant-PEGAR',
-    SHEET_ID: 'PEGAR_SHEET_ID',
-    SHEET_NAME: 'Registro 2026',
-    ALLOWED_CHAT_ID: '' // dejá vacío al principio; completalo con tu chatId
-  });
-  Logger.log('Propiedades guardadas.');
-}
-function setWebhook() {
-  // Corré DESPUÉS de implementar como app web. Pega tu URL /exec acá:
-  const URL = 'PEGAR_TU_URL_/exec';
-  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/setWebhook?url=' + encodeURIComponent(URL));
-  Logger.log(r.getContentText());
-}
-function getWebhookInfo() {
-  Logger.log(UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/getWebhookInfo').getContentText());
-}
 function test() {
-  // Valida Sheet + Claude sin Telegram.
   Logger.log('Sheet OK: fila siguiente = ' + nextId(getSheet()));
-  const o = sanitize(classify('mcdonalds 12500 con visa'));
+  const o = sanitize(classify('restaurante 40000'));
   Logger.log('Claude OK: ' + JSON.stringify(o));
   Logger.log('Resumen:\n' + resumen(o));
 }

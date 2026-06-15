@@ -7,6 +7,9 @@ Thumbs.db
 .idea/
 *.swp
 
+# Claude Code
+.claude/
+
 # datos sensibles / temporales
 *.csv
 !scripts/*.example.csv
