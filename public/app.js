@@ -1,4 +1,23 @@
 
+/* ---------- GATE ---------- */
+const PASS_HASH='11d3e5795e5d027045849d29cdd8f1ea409b8b92624899525d4758b6bfdd6bd2';
+async function sha256(str){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function unlockGate(){document.getElementById('gate').style.display='none';loadData();}
+async function checkGate(){
+  const stored=sessionStorage.getItem('lc_auth');
+  if(stored===PASS_HASH){unlockGate();return;}
+  document.getElementById('gate').style.display='flex';
+}
+document.getElementById('gateBtn').addEventListener('click',async()=>{
+  const val=document.getElementById('gateInput').value;
+  if(!val)return;
+  const h=await sha256(val);
+  if(h===PASS_HASH){sessionStorage.setItem('lc_auth',h);unlockGate();}
+  else{document.getElementById('gateErr').textContent='Contraseña incorrecta';document.getElementById('gateInput').value='';document.getElementById('gateInput').focus();}
+});
+document.getElementById('gateInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('gateBtn').click();});
+checkGate();
+
 let DATA = [];
 
 const COL={navy:'#1A2E60',azul:'#50B3EA',ing:'#2F5FD0',egr:'#E2615A',marie:'#D6455D',usd:'#3FA98A',lime:'#7BC23E',faint:'#8A94A6',border:'#E4E8F0'};
@@ -434,6 +453,7 @@ async function loadData(){
     msg('No pude cargar data.json: '+err.message+'. Cargá una planilla manualmente.',false);
     DATA=[];
   }
+  document.getElementById('dDesde').value='';
+  document.getElementById('dHasta').value='';
   buildFilters();renderAll();renderInsights();
 }
-loadData();
