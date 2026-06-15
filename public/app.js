@@ -263,7 +263,7 @@ function tog(set,v){set.has(v)?set.delete(v):set.add(v);}
 /* ---------- INIT ---------- */
 async function loadData(){
   try{
-    const res = await fetch('./data.json');
+    const res = await fetch('./data.json', { cache: 'no-cache' });
     if(!res.ok) throw new Error('HTTP '+res.status);
     DATA = await res.json();
   }catch(err){
