@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <!-- INSIGHTS -->
+  <!-- INSIGHTS (snapshot) -->
   <div class="insights" id="insights">
     <h3>Insights · evolutivo</h3>
     <div class="when" id="insWhen"></div>
@@ -43,17 +43,31 @@
     <div class="kpi k-tasa"><div class="lab">Tasa de ahorro</div><div class="val" id="kTasa">—</div><div class="hint">(Marie + USD) / ingresos</div></div>
   </div>
 
+  <!-- SMART ALERTS -->
+  <div class="alerts-row" id="alertsRow" style="display:none"></div>
+
   <!-- FILTERS -->
   <div class="filters">
-    <div class="fgroup"><span class="flab">Mes</span><div class="chips" id="fMes"></div></div>
+    <div class="fgroup"><span class="flab">Año</span><div class="chips" id="fAño"></div></div>
     <div class="fgroup"><span class="flab">Tipo</span><div class="chips" id="fTipo"></div></div>
+    <div class="fgroup"><span class="flab">Mes</span>
+      <div class="dd" id="mesDD">
+        <button class="dd-btn" id="mesDDbtn">Todos <span class="cnt" id="mesCnt" style="display:none"></span> ▾</button>
+        <div class="dd-panel" id="mesPanel" style="display:none"></div>
+      </div>
+    </div>
     <div class="fgroup"><span class="flab">Categoría</span>
       <div class="dd" id="catDD">
         <button class="dd-btn" id="catDDbtn">Todas <span class="cnt" id="catCnt" style="display:none"></span> ▾</button>
         <div class="dd-panel" id="catPanel" style="display:none"></div>
       </div>
     </div>
-    <div class="fgroup"><span class="flab">Medio</span><div class="chips" id="fMed"></div></div>
+    <div class="fgroup"><span class="flab">Medio</span>
+      <div class="dd" id="medDD">
+        <button class="dd-btn" id="medDDbtn">Todos <span class="cnt" id="medCnt" style="display:none"></span> ▾</button>
+        <div class="dd-panel" id="medPanel" style="display:none"></div>
+      </div>
+    </div>
     <div class="fgroup"><span class="flab">Día</span>
       <input type="date" class="dt-input" id="dDesde" title="Desde"/>
       <span style="color:var(--faint);font-size:12px">→</span>

@@ -7,7 +7,7 @@ const NO_CONSUMO=['Deuda Marie','Ahorro USD'];
 const NO_ING=['Reintegro','Préstamo recibido'];
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-const state={sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc'};
+const state={sAño:new Set([2026]),sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc'};
 let chBar,chDonut,chEvo;
 
 function pm(x){return typeof x==='number'?x:(parseFloat(x)||0);}
@@ -19,6 +19,7 @@ function añoFromISO(f){const y=parseInt((f||'').slice(0,4),10);return y||null;}
 
 function getFil(){
   return DATA.filter(d=>{
+    if(state.sAño.size && !state.sAño.has(d.año))return false;
     if(state.sMes.size && !state.sMes.has(d.mes))return false;
     if(state.tipo!=='todos' && d.tipo!==state.tipo)return false;
     if(state.sCat.size && !state.sCat.has(d.cat))return false;
@@ -39,19 +40,60 @@ function agg(rows){
 
 /* ---------- FILTER UI ---------- */
 function buildFilters(){
-  const meses=MESES.filter(m=>DATA.some(d=>d.mes===m));
-  document.getElementById('fMes').innerHTML=meses.map(m=>`<button class="chip" data-mes="${m}">${m.slice(0,3)}</button>`).join('');
-  document.getElementById('fTipo').innerHTML=['todos','Ingreso','Egreso'].map(t=>`<button class="chip${t==='todos'?' on':''}" data-tipo="${t}">${t==='todos'?'Todos':t}</button>`).join('');
-  const medios=[...new Set(DATA.map(d=>d.medio))].sort();
-  document.getElementById('fMed').innerHTML=medios.map(m=>{const lab=m.replace('Santander - ','S·').replace('Mercado Pago - ','MP·');return `<button class="chip" data-med="${m}">${lab}</button>`;}).join('');
-  // dropdown categorias (egreso cats, orden por gasto)
+  // Año chips
+  const años=[...new Set(DATA.map(d=>d.año))].filter(Boolean).sort();
+  document.getElementById('fAño').innerHTML=
+    `<button class="chip${!state.sAño.size?' on':''}" data-año="todos">Todos</button>`+
+    años.map(y=>`<button class="chip${state.sAño.has(y)?' on':''}" data-año="${y}">${y}</button>`).join('');
+
+  // Tipo chips
+  document.getElementById('fTipo').innerHTML=['todos','Ingreso','Egreso'].map(t=>{
+    const on=(t==='todos'&&state.tipo==='todos')||(t!=='todos'&&t===state.tipo);
+    return `<button class="chip${on?' on':''}" data-tipo="${t}">${t==='todos'?'Todos':t}</button>`;
+  }).join('');
+
+  // Mes dropdown panel
+  buildMesPanel();
+
+  // Cat dropdown (ordered by spend across all data)
   const catTot={};DATA.filter(d=>d.tipo==='Egreso').forEach(d=>catTot[d.cat]=(catTot[d.cat]||0)+pm(d.monto));
   const cats=Object.keys(catTot).sort((a,b)=>catTot[b]-catTot[a]);
-  document.getElementById('catPanel').innerHTML=cats.map(c=>`<label class="dd-opt"><input type="checkbox" data-cat="${c}"><span class="dot" style="background:${CAT_COL[c]||'#94A3B8'}"></span>${c}</label>`).join('')
+  document.getElementById('catPanel').innerHTML=cats.map(c=>`<label class="dd-opt"><input type="checkbox" data-cat="${c}"${state.sCat.has(c)?' checked':''}><span class="dot" style="background:${CAT_COL[c]||'#94A3B8'}"></span>${c}</label>`).join('')
     +`<div class="dd-foot"><button id="catNone">Limpiar</button><button id="catClose">Cerrar</button></div>`;
+
+  // Medio dropdown panel
+  buildMedPanel();
+
+  refreshCatBtn();refreshMesBtn();refreshMedBtn();
+}
+
+function buildMesPanel(){
+  const añosActivos=state.sAño.size?[...state.sAño]:[...new Set(DATA.map(d=>d.año).filter(Boolean))];
+  const meses=MESES.filter(m=>DATA.some(d=>d.mes===m&&añosActivos.includes(d.año)));
+  document.getElementById('mesPanel').innerHTML=meses.map(m=>`<label class="dd-opt"><input type="checkbox" data-mes="${m}"${state.sMes.has(m)?' checked':''}><span>${m}</span></label>`).join('')
+    +`<div class="dd-foot"><button id="mesNone">Limpiar</button><button id="mesClose">Cerrar</button></div>`;
+}
+
+function buildMedPanel(){
+  const medios=[...new Set(DATA.map(d=>d.medio))].filter(Boolean).sort();
+  document.getElementById('medPanel').innerHTML=medios.map(m=>{
+    const lab=m.replace('Santander - ','S·').replace('Mercado Pago - ','MP·');
+    return `<label class="dd-opt"><input type="checkbox" data-med="${m}"${state.sMed.has(m)?' checked':''}><span>${lab}</span></label>`;
+  }).join('')+`<div class="dd-foot"><button id="medNone">Limpiar</button><button id="medClose">Cerrar</button></div>`;
+}
+
+function refreshMesBtn(){
+  const cnt=document.getElementById('mesCnt'),btn=document.getElementById('mesDDbtn');
+  if(state.sMes.size){cnt.style.display='inline-block';cnt.textContent=state.sMes.size;btn.childNodes[0].nodeValue='Meses ';}
+  else{cnt.style.display='none';btn.childNodes[0].nodeValue='Todos ';}
+}
+function refreshMedBtn(){
+  const cnt=document.getElementById('medCnt'),btn=document.getElementById('medDDbtn');
+  if(state.sMed.size){cnt.style.display='inline-block';cnt.textContent=state.sMed.size;btn.childNodes[0].nodeValue='Medios ';}
+  else{cnt.style.display='none';btn.childNodes[0].nodeValue='Todos ';}
 }
 function refreshCatBtn(){
-  const cnt=document.getElementById('catCnt');const btn=document.getElementById('catDDbtn');
+  const cnt=document.getElementById('catCnt'),btn=document.getElementById('catDDbtn');
   if(state.sCat.size){cnt.style.display='inline-block';cnt.textContent=state.sCat.size;btn.childNodes[0].nodeValue='Categorías ';}
   else{cnt.style.display='none';btn.childNodes[0].nodeValue='Todas ';}
 }
@@ -67,9 +109,71 @@ function renderKpis(rows){
   document.getElementById('kTasa').textContent=a.tasa.toFixed(0)+'%';
 }
 
+/* ---------- SMART ALERTS ---------- */
+function renderAlerts(rows){
+  const bar=document.getElementById('alertsRow');
+  const eRows=rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat));
+  const monthsWithData=MESES.filter(m=>eRows.some(d=>d.mes===m));
+  const alerts=[];
+
+  if(monthsWithData.length>=2){
+    const lastM=monthsWithData[monthsWithData.length-1];
+    const prevMs=monthsWithData.slice(0,-1);
+
+    // Gasto total: último mes vs promedio
+    const lastTotal=eRows.filter(d=>d.mes===lastM).reduce((s,d)=>s+pm(d.monto),0);
+    const prevVals=prevMs.map(m=>eRows.filter(d=>d.mes===m).reduce((s,d)=>s+pm(d.monto),0));
+    const prevAvg=prevVals.reduce((s,v)=>s+v,0)/prevMs.length;
+    if(prevAvg>0){
+      const pct=(lastTotal-prevAvg)/prevAvg*100;
+      if(pct>15)alerts.push({type:'warn',ico:'📈',txt:`<b>${lastM}</b>: gasto total <b>+${pct.toFixed(0)}%</b> vs. promedio mensual (${fmt(lastTotal)} vs. ${fmt(prevAvg)}/mes)`});
+      else if(pct<-15)alerts.push({type:'good',ico:'📉',txt:`<b>${lastM}</b>: gasto total <b>${pct.toFixed(0)}%</b> vs. promedio mensual (${fmt(lastTotal)} vs. ${fmt(prevAvg)}/mes)`});
+    }
+
+    // Por categoría: último mes vs promedio meses anteriores
+    const catAlerts=[];
+    [...new Set(eRows.map(d=>d.cat))].forEach(cat=>{
+      const lv=eRows.filter(d=>d.mes===lastM&&d.cat===cat).reduce((s,d)=>s+pm(d.monto),0);
+      const pvs=prevMs.map(m=>eRows.filter(d=>d.mes===m&&d.cat===cat).reduce((s,d)=>s+pm(d.monto),0));
+      const pva=pvs.reduce((s,v)=>s+v,0)/prevMs.length;
+      if(pva>5000&&lv>5000){const p=(lv-pva)/pva*100;if(Math.abs(p)>30)catAlerts.push({cat,p,lv,pva});}
+    });
+    catAlerts.sort((a,b)=>Math.abs(b.p)-Math.abs(a.p)).slice(0,3).forEach(({cat,p,lv,pva})=>{
+      if(p>0)alerts.push({type:'warn',ico:'⚠️',txt:`<b>${cat}</b> en ${lastM}: <b>+${p.toFixed(0)}%</b> vs. promedio (${fmt(lv)} vs. ${fmt(pva)}/mes)`});
+      else alerts.push({type:'good',ico:'✅',txt:`<b>${cat}</b> en ${lastM}: <b>${p.toFixed(0)}%</b> vs. promedio (${fmt(lv)} vs. ${fmt(pva)}/mes)`});
+    });
+
+    // Mes pico
+    let peak=null,peakV=-1;
+    monthsWithData.forEach(m=>{const v=eRows.filter(d=>d.mes===m).reduce((s,d)=>s+pm(d.monto),0);if(v>peakV){peakV=v;peak=m;}});
+    if(peak)alerts.push({type:'info',ico:'📅',txt:`Mes pico del período: <b>${peak}</b> (${fmt(peakV)})`});
+  }
+
+  // Categoría dominante
+  const byCat={};
+  eRows.forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+pm(d.monto));
+  const totalCat=Object.values(byCat).reduce((s,v)=>s+v,0);
+  const sorted=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length&&totalCat>0){
+    const[tc,tv]=sorted[0];const pct=tv/totalCat*100;
+    if(pct>20)alerts.push({type:'info',ico:'🏷️',txt:`<b>${tc}</b> concentra el <b>${pct.toFixed(0)}%</b> de tus gastos de consumo (${fmt(tv)})`});
+  }
+
+  // Tasa de ahorro
+  const a=agg(rows);
+  if(a.ing>0){
+    if(a.tasa<10)alerts.push({type:'alert',ico:'🔴',txt:`Tasa de ahorro del período: <b>${a.tasa.toFixed(0)}%</b> — revisá gastos recurrentes`});
+    else if(a.tasa>35)alerts.push({type:'good',ico:'🟢',txt:`Tasa de ahorro del período: <b>${a.tasa.toFixed(0)}%</b> — excelente ritmo`});
+  }
+
+  if(!alerts.length){bar.style.display='none';return;}
+  bar.style.display='flex';
+  bar.innerHTML=alerts.map(al=>`<div class="al-card al-${al.type}"><span class="al-ico">${al.ico}</span><div class="al-txt">${al.txt}</div></div>`).join('');
+}
+
 /* ---------- CHART 1: barras ---------- */
 function renderBar(rows){
-  const meses=MESES.filter(m=>(state.sMes.size?state.sMes.has(m):true) && rows.some(d=>d.mes===m));
+  const meses=MESES.filter(m=>(state.sMes.size?state.sMes.has(m):true)&&rows.some(d=>d.mes===m));
   const ing=[],gas=[],mar=[],usd=[];
   meses.forEach(m=>{const a=agg(rows.filter(d=>d.mes===m));ing.push(a.ing);gas.push(a.gastos);mar.push(a.marie);usd.push(a.usd);});
   const ds=[
@@ -90,7 +194,7 @@ function renderBar(rows){
 /* ---------- CHART 2: donut ---------- */
 function renderDonut(rows){
   const byCat={};
-  rows.filter(d=>d.tipo==='Egreso' && !NO_CONSUMO.includes(d.cat)).forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+pm(d.monto));
+  rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)).forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+pm(d.monto));
   const ents=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const labels=ents.map(e=>e[0]),vals=ents.map(e=>e[1]),cols=labels.map(c=>CAT_COL[c]||'#94A3B8');
   const total=vals.reduce((s,v)=>s+v,0);
@@ -101,7 +205,7 @@ function renderDonut(rows){
         tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ('+(total?(c.parsed/total*100).toFixed(1):0)+'%)'}}}}});
 }
 
-/* ---------- CHART 3: evolución (gasto + tasa) ---------- */
+/* ---------- CHART 3: evolución ---------- */
 function renderEvo(rows){
   const meses=MESES.filter(m=>rows.some(d=>d.mes===m));
   const gas=[],tasa=[];
@@ -138,10 +242,10 @@ function renderTable(){
 
 function renderAll(){
   const rows=getFil();
-  renderKpis(rows);renderBar(rows);renderDonut(rows);renderEvo(rows);renderTable();
+  renderKpis(rows);renderBar(rows);renderDonut(rows);renderEvo(rows);renderTable();renderAlerts(rows);
 }
 
-/* ---------- INSIGHTS ---------- */
+/* ---------- INSIGHTS (snapshot) ---------- */
 function snapshot(){
   const s={byCat:{},byMonth:{},ts:Date.now()};let ing=0,gastos=0,marie=0,usd=0;
   DATA.forEach(d=>{const x=pm(d.monto);
@@ -205,12 +309,12 @@ function renderInsights(){
 /* ---------- EXPORT ---------- */
 function exportCSV(){
   let rows=getFil().slice();const mu=state.sortDir==='asc'?1:-1,k=state.sortK;
-  rows.sort((a,b)=>{if(k==='monto')return(pm(a.monto)-pm(b.monto))*mu;if(k==='fecha'){const pa=toISO(a.fecha),pb=toISO(b.fecha);return pa<pb?-mu:pa>pb?mu:0;}const va=(a[k]||'').toString().toLowerCase(),vb=(b[k]||'').toString().toLowerCase();return va<vb?-mu:va>vb?mu:0;});
+  rows.sort((a,b)=>{if(k==='monto')return(pm(a.monto)-pm(b.monto))*mu;if(k==='fecha'){const pa=parseDate(a.fecha),pb=parseDate(b.fecha);return pa<pb?-mu:pa>pb?mu:0;}const va=(a[k]||'').toString().toLowerCase(),vb=(b[k]||'').toString().toLowerCase();return va<vb?-mu:va>vb?mu:0;});
   const cols=['Fecha','Mes','Tipo','Categoría','Concepto','Contraparte','Medio','Cuota','Monto','Divisa','Estado','Descripción'];
   const esc=v=>{v=(v==null?'':String(v));return '"'+v.replace(/"/g,'""')+'"';};
   const lines=[cols.join(',')];
   rows.forEach(d=>lines.push([d.fecha,d.mes,d.tipo,d.cat,d.concepto,d.contraparte||'',d.medio,(d.cuotaN?d.cuotaN+'/'+d.cuotaT:''),pm(d.monto),d.divisa,d.estado||'',(d.desc||'')].map(esc).join(',')));
-  const csv='\ufeff'+lines.join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const csv='﻿'+lines.join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');
   const filt=state.sMes.size?[...state.sMes].join('-'):'todos';
   a.href=url;a.download='movimientos_'+filt+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
@@ -235,40 +339,100 @@ function onFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReader
   r.readAsBinaryString(f);}
 
 /* ---------- EVENTS ---------- */
-document.getElementById('fMes').addEventListener('click',e=>{const c=e.target.closest('[data-mes]');if(!c)return;tog(state.sMes,c.dataset.mes);c.classList.toggle('on');renderAll();});
-document.getElementById('fTipo').addEventListener('click',e=>{const c=e.target.closest('[data-tipo]');if(!c)return;state.tipo=c.dataset.tipo;document.querySelectorAll('#fTipo .chip').forEach(x=>x.classList.toggle('on',x.dataset.tipo===state.tipo));renderAll();});
-document.getElementById('fMed').addEventListener('click',e=>{const c=e.target.closest('[data-med]');if(!c)return;tog(state.sMed,c.dataset.med);c.classList.toggle('on');renderAll();});
-document.getElementById('catDDbtn').addEventListener('click',()=>{const p=document.getElementById('catPanel');p.style.display=p.style.display==='none'?'block':'none';});
+// Año chips (single-select)
+document.getElementById('fAño').addEventListener('click',e=>{
+  const c=e.target.closest('[data-año]');if(!c)return;
+  const v=c.dataset.año;
+  if(v==='todos'){state.sAño.clear();}
+  else{state.sAño.clear();state.sAño.add(parseInt(v,10));}
+  document.querySelectorAll('#fAño .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+  state.sMes.clear();
+  buildMesPanel();refreshMesBtn();
+  renderAll();
+});
+
+// Tipo chips
+document.getElementById('fTipo').addEventListener('click',e=>{
+  const c=e.target.closest('[data-tipo]');if(!c)return;
+  state.tipo=c.dataset.tipo;
+  document.querySelectorAll('#fTipo .chip').forEach(x=>x.classList.toggle('on',x.dataset.tipo===state.tipo));
+  renderAll();
+});
+
+// Mes dropdown
+document.getElementById('mesDDbtn').addEventListener('click',()=>{
+  const p=document.getElementById('mesPanel');p.style.display=p.style.display==='none'?'block':'none';
+});
+document.getElementById('mesPanel').addEventListener('click',e=>{
+  if(e.target.id==='mesNone'){state.sMes.clear();document.querySelectorAll('#mesPanel input').forEach(x=>x.checked=false);refreshMesBtn();renderAll();return;}
+  if(e.target.id==='mesClose'){document.getElementById('mesPanel').style.display='none';return;}
+});
+document.getElementById('mesPanel').addEventListener('change',e=>{
+  const m=e.target.dataset.mes;if(!m)return;tog(state.sMes,m);refreshMesBtn();renderAll();
+});
+
+// Cat dropdown
+document.getElementById('catDDbtn').addEventListener('click',()=>{
+  const p=document.getElementById('catPanel');p.style.display=p.style.display==='none'?'block':'none';
+});
 document.getElementById('catPanel').addEventListener('click',e=>{
   if(e.target.id==='catNone'){state.sCat.clear();document.querySelectorAll('#catPanel input').forEach(x=>x.checked=false);refreshCatBtn();renderAll();return;}
   if(e.target.id==='catClose'){document.getElementById('catPanel').style.display='none';return;}
-  const inp=e.target.closest('.dd-opt')?e.target.closest('.dd-opt').querySelector('input'):null;
 });
 document.getElementById('catPanel').addEventListener('change',e=>{const c=e.target.dataset.cat;if(!c)return;tog(state.sCat,c);refreshCatBtn();renderAll();});
-document.addEventListener('click',e=>{if(!e.target.closest('#catDD')){document.getElementById('catPanel').style.display='none';}});
+
+// Med dropdown
+document.getElementById('medDDbtn').addEventListener('click',()=>{
+  const p=document.getElementById('medPanel');p.style.display=p.style.display==='none'?'block':'none';
+});
+document.getElementById('medPanel').addEventListener('click',e=>{
+  if(e.target.id==='medNone'){state.sMed.clear();document.querySelectorAll('#medPanel input').forEach(x=>x.checked=false);refreshMedBtn();renderAll();return;}
+  if(e.target.id==='medClose'){document.getElementById('medPanel').style.display='none';return;}
+});
+document.getElementById('medPanel').addEventListener('change',e=>{
+  const m=e.target.dataset.med;if(!m)return;tog(state.sMed,m);refreshMedBtn();renderAll();
+});
+
+// Cerrar dropdowns al hacer click afuera
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#catDD'))document.getElementById('catPanel').style.display='none';
+  if(!e.target.closest('#mesDD'))document.getElementById('mesPanel').style.display='none';
+  if(!e.target.closest('#medDD'))document.getElementById('medPanel').style.display='none';
+});
+
 document.getElementById('dDesde').addEventListener('change',e=>{state.dDesde=e.target.value;renderAll();});
 document.getElementById('dHasta').addEventListener('change',e=>{state.dHasta=e.target.value;renderAll();});
 document.getElementById('thead').addEventListener('click',e=>{const th=e.target.closest('[data-k]');if(!th)return;const k=th.dataset.k;if(state.sortK===k)state.sortDir=state.sortDir==='asc'?'desc':'asc';else{state.sortK=k;state.sortDir='asc';}renderTable();});
 document.getElementById('search').addEventListener('input',e=>{state.q=e.target.value;renderTable();});
-document.getElementById('clrBtn').addEventListener('click',()=>{state.sMes.clear();state.sCat.clear();state.sMed.clear();state.tipo='todos';state.q='';state.dDesde='';state.dHasta='';
+
+document.getElementById('clrBtn').addEventListener('click',()=>{
+  state.sAño=new Set([2026]);state.sMes.clear();state.sCat.clear();state.sMed.clear();state.tipo='todos';state.q='';state.dDesde='';state.dHasta='';
   document.getElementById('search').value='';document.getElementById('dDesde').value='';document.getElementById('dHasta').value='';
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));document.querySelector('#fTipo [data-tipo="todos"]').classList.add('on');
-  document.querySelectorAll('#catPanel input').forEach(x=>x.checked=false);refreshCatBtn();renderAll();});
+  document.querySelectorAll('#fAño .chip').forEach(x=>x.classList.toggle('on',x.dataset.año==='2026'));
+  document.querySelectorAll('#fTipo .chip').forEach(x=>x.classList.toggle('on',x.dataset.tipo==='todos'));
+  document.querySelectorAll('#catPanel input').forEach(x=>x.checked=false);refreshCatBtn();
+  buildMesPanel();refreshMesBtn();
+  document.querySelectorAll('#medPanel input').forEach(x=>x.checked=false);refreshMedBtn();
+  renderAll();
+});
+
 document.getElementById('loadBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change',onFile);
 document.getElementById('exportBtn').addEventListener('click',exportCSV);
 document.getElementById('qBtn').addEventListener('click',()=>{const ins=document.getElementById('insights');ins.classList.toggle('open');document.getElementById('qBtn').classList.toggle('on');});
+
 function tog(set,v){set.has(v)?set.delete(v):set.add(v);}
 
 /* ---------- INIT ---------- */
 async function loadData(){
   try{
-    const res = await fetch('./data.json', { cache: 'no-cache' });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    DATA = await res.json();
+    const res=await fetch('./data.json',{cache:'no-cache'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    DATA=await res.json();
   }catch(err){
-    msg('No pude cargar data.json: '+err.message+'. Cargá una planilla manualmente.', false);
-    DATA = [];
+    msg('No pude cargar data.json: '+err.message+'. Cargá una planilla manualmente.',false);
+    DATA=[];
   }
   buildFilters();renderAll();renderInsights();
 }
