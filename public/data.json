@@ -9766,5 +9766,27 @@
     "ref_banco": "",
     "estado": "Pendiente",
     "desc": ""
+  },
+  {
+    "id": "26-0448",
+    "fecha": "2026-06-16",
+    "año": 2026,
+    "mes": "Junio",
+    "hora": "",
+    "tipo": "Egreso",
+    "cat": "Comida",
+    "subcat": "Restaurante",
+    "concepto": "Rapanui Belgrano",
+    "contraparte": "Rapanui",
+    "monto": 44000.0,
+    "divisa": "ARS",
+    "medio": "Santander - TC Visa",
+    "cuotaN": "",
+    "cuotaT": "",
+    "reint": "No",
+    "fuente": "bot",
+    "ref_banco": "",
+    "estado": "Pendiente",
+    "desc": ""
   }
 ]
