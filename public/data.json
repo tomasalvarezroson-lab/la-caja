@@ -9986,5 +9986,27 @@
     "ref_banco": "",
     "estado": "Pendiente",
     "desc": ""
+  },
+  {
+    "id": "26-0458",
+    "fecha": "2026-06-22",
+    "año": 2026,
+    "mes": "Junio",
+    "hora": "",
+    "tipo": "Egreso",
+    "cat": "Regalos",
+    "subcat": "Regalos",
+    "concepto": "Regalo",
+    "contraparte": "Peter",
+    "monto": 125189.0,
+    "divisa": "ARS",
+    "medio": "Santander - Caja Ahorro ARS",
+    "cuotaN": "",
+    "cuotaT": "",
+    "reint": "No",
+    "fuente": "bot",
+    "ref_banco": "",
+    "estado": "Pendiente",
+    "desc": ""
   }
 ]
