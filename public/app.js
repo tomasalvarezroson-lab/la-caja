@@ -241,6 +241,54 @@ function renderEvo(rows){
         y1:{position:'right',grid:{display:false},min:0,ticks:{font:{family:'Lato',size:11},callback:v=>v+'%'}}}}});
 }
 
+/* ---------- COMPARATIVO MES A MES ---------- */
+function renderComparacion(){
+  const card=document.getElementById('compCard');
+  const yearData=DATA.filter(d=>!state.sAño.size||state.sAño.has(d.año));
+  const eRows=yearData.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat));
+  const monthsWithData=MESES.filter(m=>eRows.some(d=>d.mes===m));
+  if(monthsWithData.length<2){card.style.display='none';return;}
+  card.style.display='';
+  const mesB=monthsWithData[monthsWithData.length-1];
+  const mesA=monthsWithData[monthsWithData.length-2];
+  const catA={},catB={};
+  eRows.filter(d=>d.mes===mesA).forEach(d=>catA[d.cat]=(catA[d.cat]||0)+pm(d.monto));
+  eRows.filter(d=>d.mes===mesB).forEach(d=>catB[d.cat]=(catB[d.cat]||0)+pm(d.monto));
+  const totalA=Object.values(catA).reduce((s,v)=>s+v,0);
+  const totalB=Object.values(catB).reduce((s,v)=>s+v,0);
+  const dTotal=totalA?(totalB-totalA)/totalA*100:0;
+  const dTSign=dTotal>=0?'+':'';
+  const dTCls=dTotal>2?'comp-bad':dTotal<-2?'comp-good':'comp-flat';
+  const cats=[...new Set([...Object.keys(catA),...Object.keys(catB)])].sort((a,b)=>(catB[b]||0)-(catB[a]||0));
+  const maxV=Math.max(...cats.map(c=>Math.max(catA[c]||0,catB[c]||0)),1);
+  const rowsHtml=cats.map(c=>{
+    const va=catA[c]||0,vb=catB[c]||0;
+    const d=va?(vb-va)/va*100:(vb>0?100:0);
+    const dCl=d>5?'comp-bad':d<-5?'comp-good':'comp-flat';
+    const dAr=d>5?'↑':d<-5?'↓':'→';
+    const col=CAT_COL[c]||'#94A3B8';
+    const bA=(va/maxV*100).toFixed(0),bB=(vb/maxV*100).toFixed(0);
+    return `<div class="comp-row">
+      <div class="comp-cat"><span class="dot" style="background:${col}"></span>${c}</div>
+      <div class="comp-cell"><div class="comp-bar-wrap"><div class="comp-bar" style="width:${bA}%;background:${col}55"></div></div><span class="comp-amt">${fmtShort(va)}</span></div>
+      <div class="comp-cell"><div class="comp-bar-wrap"><div class="comp-bar" style="width:${bB}%;background:${col}"></div></div><span class="comp-amt">${fmtShort(vb)}</span></div>
+      <div class="comp-delta ${dCl}">${dAr} ${va?(d>=0?'+':'')+d.toFixed(0)+'%':'nuevo'}</div>
+    </div>`;}).join('');
+  card.innerHTML=`<div class="ct">Comparativo de consumo · ${mesA} vs ${mesB}</div>
+    <div class="comp-summary">
+      <div class="comp-sum-card comp-sum-a"><div class="lab">${mesA}</div><div class="val">${fmt(totalA)}</div><div class="hint">gasto de consumo</div></div>
+      <div class="comp-sum-card comp-sum-mid"><div class="lab">Variación</div><div class="val ${dTCls}">${dTSign}${dTotal.toFixed(1)}%</div><div class="hint">${totalB>totalA?'gastás más que el mes anterior':'gastás menos que el mes anterior'}</div></div>
+      <div class="comp-sum-card comp-sum-b"><div class="lab">${mesB}</div><div class="val">${fmt(totalB)}</div><div class="hint">gasto de consumo</div></div>
+    </div>
+    <div class="comp-header-row">
+      <div class="comp-cat">Categoría</div>
+      <div class="comp-cell"><span class="comp-col-lab">${mesA}</span></div>
+      <div class="comp-cell"><span class="comp-col-lab">${mesB}</span></div>
+      <div class="comp-delta" style="color:var(--faint);font-weight:800;font-size:11px">VARIACIÓN</div>
+    </div>
+    <div class="comp-rows">${rowsHtml}</div>`;
+}
+
 /* ---------- TABLE ---------- */
 function renderTable(){
   let rows=getFil().slice();const mu=state.sortDir==='asc'?1:-1,k=state.sortK;
@@ -261,7 +309,7 @@ function renderTable(){
 
 function renderAll(){
   const rows=getFil();
-  renderKpis(rows);renderBar(rows);renderDonut(rows);renderEvo(rows);renderTable();renderAlerts(rows);
+  renderKpis(rows);renderBar(rows);renderDonut(rows);renderEvo(rows);renderTable();renderAlerts(rows);renderComparacion();
 }
 
 /* ---------- INSIGHTS (snapshot) ---------- */
