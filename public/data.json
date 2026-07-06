@@ -9284,28 +9284,6 @@
     "desc": ""
   },
   {
-    "id": "26-0494",
-    "fecha": "2026-06-02",
-    "año": 2026,
-    "mes": "Junio",
-    "hora": "",
-    "tipo": "Egreso",
-    "cat": "Servicios",
-    "subcat": "",
-    "concepto": "AGIP (gas)",
-    "contraparte": "",
-    "monto": 208325.87,
-    "divisa": "ARS",
-    "medio": "Santander - Caja Ahorro ARS",
-    "cuotaN": "",
-    "cuotaT": "",
-    "reint": "No",
-    "fuente": "bot",
-    "ref_banco": "",
-    "estado": "Conciliado",
-    "desc": ""
-  },
-  {
     "id": "v8-0404",
     "fecha": "2026-06-02",
     "año": 2026,
