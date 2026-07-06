@@ -26,7 +26,7 @@ const NO_CONSUMO=['Deuda Marie','Ahorro USD'];
 const NO_ING=['Reintegro','Préstamo recibido'];
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-const state={sAño:new Set([2026]),sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc'};
+const state={sAño:new Set([2026]),sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc',compMesA:null,compMesB:null};
 let chBar,chDonut,chEvo;
 
 function pm(x){return typeof x==='number'?x:(parseFloat(x)||0);}
@@ -249,8 +249,12 @@ function renderComparacion(){
   const monthsWithData=MESES.filter(m=>eRows.some(d=>d.mes===m));
   if(monthsWithData.length<2){card.style.display='none';return;}
   card.style.display='';
-  const mesB=monthsWithData[monthsWithData.length-1];
-  const mesA=monthsWithData[monthsWithData.length-2];
+  // Auto-pick or validate selected months
+  if(!state.compMesB||!monthsWithData.includes(state.compMesB))
+    state.compMesB=monthsWithData[monthsWithData.length-1];
+  if(!state.compMesA||!monthsWithData.includes(state.compMesA)||state.compMesA===state.compMesB)
+    state.compMesA=monthsWithData[monthsWithData.length-2]||monthsWithData[0];
+  const mesA=state.compMesA,mesB=state.compMesB;
   const catA={},catB={};
   eRows.filter(d=>d.mes===mesA).forEach(d=>catA[d.cat]=(catA[d.cat]||0)+pm(d.monto));
   eRows.filter(d=>d.mes===mesB).forEach(d=>catB[d.cat]=(catB[d.cat]||0)+pm(d.monto));
@@ -274,19 +278,29 @@ function renderComparacion(){
       <div class="comp-cell"><div class="comp-bar-wrap"><div class="comp-bar" style="width:${bB}%;background:${col}"></div></div><span class="comp-amt">${fmtShort(vb)}</span></div>
       <div class="comp-delta ${dCl}">${dAr} ${va?(d>=0?'+':'')+d.toFixed(0)+'%':'nuevo'}</div>
     </div>`;}).join('');
-  card.innerHTML=`<div class="ct">Comparativo de consumo · ${mesA} vs ${mesB}</div>
-    <div class="comp-summary">
-      <div class="comp-sum-card comp-sum-a"><div class="lab">${mesA}</div><div class="val">${fmt(totalA)}</div><div class="hint">gasto de consumo</div></div>
-      <div class="comp-sum-card comp-sum-mid"><div class="lab">Variación</div><div class="val ${dTCls}">${dTSign}${dTotal.toFixed(1)}%</div><div class="hint">${totalB>totalA?'gastás más que el mes anterior':'gastás menos que el mes anterior'}</div></div>
-      <div class="comp-sum-card comp-sum-b"><div class="lab">${mesB}</div><div class="val">${fmt(totalB)}</div><div class="hint">gasto de consumo</div></div>
+  const mkOpts=(sel)=>monthsWithData.map(m=>`<option value="${m}"${m===sel?' selected':''}>${m}</option>`).join('');
+  card.innerHTML=`<div class="comp-top">
+    <div class="ct" style="margin:0">Comparativo de consumo</div>
+    <div class="comp-sel-wrap">
+      <select class="comp-sel" id="compSelA">${mkOpts(mesA)}</select>
+      <span class="comp-vs">vs</span>
+      <select class="comp-sel" id="compSelB">${mkOpts(mesB)}</select>
     </div>
-    <div class="comp-header-row">
-      <div class="comp-cat">Categoría</div>
-      <div class="comp-cell"><span class="comp-col-lab">${mesA}</span></div>
-      <div class="comp-cell"><span class="comp-col-lab">${mesB}</span></div>
-      <div class="comp-delta" style="color:var(--faint);font-weight:800;font-size:11px">VARIACIÓN</div>
-    </div>
-    <div class="comp-rows">${rowsHtml}</div>`;
+  </div>
+  <div class="comp-summary">
+    <div class="comp-sum-card comp-sum-a"><div class="lab">${mesA}</div><div class="val">${fmt(totalA)}</div><div class="hint">gasto de consumo</div></div>
+    <div class="comp-sum-card comp-sum-mid"><div class="lab">Variación</div><div class="val ${dTCls}">${dTSign}${dTotal.toFixed(1)}%</div><div class="hint">${totalB>totalA?'gastás más':'gastás menos'}</div></div>
+    <div class="comp-sum-card comp-sum-b"><div class="lab">${mesB}</div><div class="val">${fmt(totalB)}</div><div class="hint">gasto de consumo</div></div>
+  </div>
+  <div class="comp-header-row">
+    <div class="comp-cat">Categoría</div>
+    <div class="comp-cell"><span class="comp-col-lab">${mesA}</span></div>
+    <div class="comp-cell"><span class="comp-col-lab">${mesB}</span></div>
+    <div class="comp-delta" style="color:var(--faint);font-weight:800;font-size:11px">VARIACIÓN</div>
+  </div>
+  <div class="comp-rows">${rowsHtml}</div>`;
+  document.getElementById('compSelA').addEventListener('change',e=>{state.compMesA=e.target.value;renderComparacion();});
+  document.getElementById('compSelB').addEventListener('change',e=>{state.compMesB=e.target.value;renderComparacion();});
 }
 
 /* ---------- TABLE ---------- */

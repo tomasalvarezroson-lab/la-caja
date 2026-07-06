@@ -123,6 +123,11 @@ tbody tr:hover{background:var(--soft)}
 .comp-sum-b .val{color:var(--navy)}
 .comp-sum-mid{background:#fff;display:flex;flex-direction:column;justify-content:center}
 .comp-bad{color:var(--egr)} .comp-good{color:var(--usd)} .comp-flat{color:var(--faint)}
+.comp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.comp-sel-wrap{display:flex;align-items:center;gap:9px}
+.comp-sel{font-family:'Nunito';font-weight:700;font-size:13px;border:1.5px solid var(--border);border-radius:9px;padding:7px 12px;color:var(--navy);background:#fff;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A94A6' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.comp-sel:focus{border-color:var(--azul)}
+.comp-vs{font-family:'Nunito';font-weight:800;font-size:13px;color:var(--faint)}
 .comp-header-row,.comp-row{display:grid;grid-template-columns:170px 1fr 1fr 96px;gap:8px;align-items:center;padding:7px 10px;border-radius:8px}
 .comp-header-row{background:var(--soft);margin-bottom:6px}
 .comp-col-lab{font-family:'Nunito';font-weight:800;font-size:11.5px;color:var(--navy)}
