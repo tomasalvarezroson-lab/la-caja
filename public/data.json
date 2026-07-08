@@ -10866,5 +10866,27 @@
     "ref_banco": "",
     "estado": "Conciliado",
     "desc": ""
+  },
+  {
+    "id": "26-0498",
+    "fecha": "2026-07-07",
+    "año": 2026,
+    "mes": "Julio",
+    "hora": "",
+    "tipo": "Egreso",
+    "cat": "Comida",
+    "subcat": "Fast food",
+    "concepto": "Sanguches",
+    "contraparte": "",
+    "monto": 35600.0,
+    "divisa": "ARS",
+    "medio": "Mercado Pago - Saldo",
+    "cuotaN": "",
+    "cuotaT": "",
+    "reint": "No",
+    "fuente": "bot",
+    "ref_banco": "",
+    "estado": "Pendiente",
+    "desc": ""
   }
 ]
