@@ -10912,7 +10912,7 @@
     "desc": "ref banco 689269 (conciliación manual, agregar al Sheet) - VER: monto sin dividir 50%?"
   },
   {
-    "id": "26-0588",
+    "id": "26-0501",
     "fecha": "2026-06-20",
     "año": 2026,
     "mes": "Junio",
@@ -10966,7 +10966,7 @@
     "subcat": "Auto",
     "concepto": "Ausol",
     "contraparte": "",
-    "monto": 1192.99,
+    "monto": 994.15,
     "divisa": "ARS",
     "medio": "Santander - TC Visa",
     "cuotaN": "",
@@ -10979,6 +10979,28 @@
   },
   {
     "id": "26-0503",
+    "fecha": "2026-07-02",
+    "año": 2026,
+    "mes": "Julio",
+    "hora": "",
+    "tipo": "Egreso",
+    "cat": "Vehículo",
+    "subcat": "Auto",
+    "concepto": "Ausol",
+    "contraparte": "",
+    "monto": 1192.99,
+    "divisa": "ARS",
+    "medio": "Santander - TC Visa",
+    "cuotaN": "",
+    "cuotaT": "",
+    "reint": "No",
+    "fuente": "bot",
+    "ref_banco": "",
+    "estado": "Conciliado",
+    "desc": "Peaje"
+  },
+  {
+    "id": "26-0504",
     "fecha": "2026-07-02",
     "año": 2026,
     "mes": "Julio",
@@ -11000,7 +11022,7 @@
     "desc": "Peaje"
   },
   {
-    "id": "26-0504",
+    "id": "26-0505",
     "fecha": "2026-07-02",
     "año": 2026,
     "mes": "Julio",
@@ -11022,7 +11044,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0505",
+    "id": "26-0506",
     "fecha": "2026-07-02",
     "año": 2026,
     "mes": "Julio",
@@ -11044,7 +11066,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0506",
+    "id": "26-0507",
     "fecha": "2026-07-03",
     "año": 2026,
     "mes": "Julio",
@@ -11066,7 +11088,7 @@
     "desc": "Servicio - Teléfono"
   },
   {
-    "id": "26-0507",
+    "id": "26-0508",
     "fecha": "2026-07-04",
     "año": 2026,
     "mes": "Julio",
@@ -11088,7 +11110,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0508",
+    "id": "26-0509",
     "fecha": "2026-07-04",
     "año": 2026,
     "mes": "Julio",
@@ -11110,7 +11132,7 @@
     "desc": "Servicio Soundcloud"
   },
   {
-    "id": "26-0509",
+    "id": "26-0510",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11132,7 +11154,7 @@
     "desc": "Regalo Lorena + Sandra"
   },
   {
-    "id": "26-0510",
+    "id": "26-0511",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11154,7 +11176,7 @@
     "desc": "Servicio Youtube Premium"
   },
   {
-    "id": "26-0511",
+    "id": "26-0512",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -11176,7 +11198,7 @@
     "desc": "Supermercado"
   },
   {
-    "id": "26-0512",
+    "id": "26-0513",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -11198,7 +11220,7 @@
     "desc": "Servicio Adobe"
   },
   {
-    "id": "26-0513",
+    "id": "26-0514",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -11220,7 +11242,7 @@
     "desc": "Servicio Nube Apple"
   },
   {
-    "id": "26-0514",
+    "id": "26-0515",
     "fecha": "2026-07-07",
     "año": 2026,
     "mes": "Julio",
@@ -11242,7 +11264,7 @@
     "desc": "Servicio Spotify"
   },
   {
-    "id": "26-0515",
+    "id": "26-0516",
     "fecha": "2026-07-08",
     "año": 2026,
     "mes": "Julio",
@@ -11264,7 +11286,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0516",
+    "id": "26-0517",
     "fecha": "2026-07-08",
     "año": 2026,
     "mes": "Julio",
@@ -11286,7 +11308,7 @@
     "desc": "Servicio Google"
   },
   {
-    "id": "26-0517",
+    "id": "26-0518",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -11308,7 +11330,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0518",
+    "id": "26-0519",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -11330,7 +11352,7 @@
     "desc": "Compra panadería"
   },
   {
-    "id": "26-0519",
+    "id": "26-0520",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -11352,7 +11374,7 @@
     "desc": "Compras plan con amigos"
   },
   {
-    "id": "26-0520",
+    "id": "26-0521",
     "fecha": "2026-07-10",
     "año": 2026,
     "mes": "Julio",
@@ -11374,7 +11396,7 @@
     "desc": "Compras plan con amigos"
   },
   {
-    "id": "26-0521",
+    "id": "26-0522",
     "fecha": "2026-07-11",
     "año": 2026,
     "mes": "Julio",
@@ -11396,7 +11418,7 @@
     "desc": "Transporte Uber"
   },
   {
-    "id": "26-0522",
+    "id": "26-0523",
     "fecha": "2026-07-11",
     "año": 2026,
     "mes": "Julio",
@@ -11418,7 +11440,7 @@
     "desc": "Compra de ropa en VCP"
   },
   {
-    "id": "26-0523",
+    "id": "26-0524",
     "fecha": "2026-07-16",
     "año": 2026,
     "mes": "Julio",
@@ -11440,7 +11462,7 @@
     "desc": "Servicio Prime Video"
   },
   {
-    "id": "26-0524",
+    "id": "26-0525",
     "fecha": "2026-07-17",
     "año": 2026,
     "mes": "Julio",
@@ -11462,7 +11484,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0525",
+    "id": "26-0526",
     "fecha": "2026-07-17",
     "año": 2026,
     "mes": "Julio",
@@ -11484,7 +11506,7 @@
     "desc": "Servicio Splice"
   },
   {
-    "id": "26-0526",
+    "id": "26-0527",
     "fecha": "2026-07-18",
     "año": 2026,
     "mes": "Julio",
@@ -11506,7 +11528,7 @@
     "desc": "Plan con Lucas en Artlab"
   },
   {
-    "id": "26-0527",
+    "id": "26-0528",
     "fecha": "2026-07-18",
     "año": 2026,
     "mes": "Julio",
@@ -11528,7 +11550,7 @@
     "desc": "Cena con Lucas post Artlab (Lucas devolvió $50.000 en efvo)"
   },
   {
-    "id": "26-0528",
+    "id": "26-0529",
     "fecha": "2026-07-18",
     "año": 2026,
     "mes": "Julio",
@@ -11550,7 +11572,7 @@
     "desc": "Reintegro recibido en efectivo por cena Luisa's — INGRESO"
   },
   {
-    "id": "26-0529",
+    "id": "26-0530",
     "fecha": "2026-07-19",
     "año": 2026,
     "mes": "Julio",
@@ -11572,7 +11594,7 @@
     "desc": "Nafta"
   },
   {
-    "id": "26-0530",
+    "id": "26-0531",
     "fecha": "2026-07-20",
     "año": 2026,
     "mes": "Julio",
@@ -11594,7 +11616,7 @@
     "desc": "Servicio Claude"
   },
   {
-    "id": "26-0531",
+    "id": "26-0532",
     "fecha": "2026-07-21",
     "año": 2026,
     "mes": "Julio",
@@ -11616,7 +11638,7 @@
     "desc": "Helado en Mc Donald's"
   },
   {
-    "id": "26-0532",
+    "id": "26-0533",
     "fecha": "2026-07-22",
     "año": 2026,
     "mes": "Julio",
@@ -11638,7 +11660,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0533",
+    "id": "26-0534",
     "fecha": "2026-07-23",
     "año": 2026,
     "mes": "Julio",
@@ -11660,7 +11682,7 @@
     "desc": "Compra de vinos para un plan"
   },
   {
-    "id": "26-0534",
+    "id": "26-0535",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -11682,7 +11704,7 @@
     "desc": "Compra de productos de perfumería"
   },
   {
-    "id": "26-0535",
+    "id": "26-0536",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -11704,7 +11726,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0536",
+    "id": "26-0537",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -11726,7 +11748,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0537",
+    "id": "26-0538",
     "fecha": "2026-07-28",
     "año": 2026,
     "mes": "Julio",
@@ -11748,7 +11770,7 @@
     "desc": "Rueditas para la silla — se divide x3 con Pedro y Marie ($25.999,00 c/u). PENDIENTE: aún no pagaron su parte, cargar Reintegro cuando paguen."
   },
   {
-    "id": "26-0538",
+    "id": "26-0539",
     "fecha": "2026-07-29",
     "año": 2026,
     "mes": "Julio",
@@ -11770,7 +11792,7 @@
     "desc": "Café"
   },
   {
-    "id": "26-0539",
+    "id": "26-0540",
     "fecha": "2026-07-04",
     "año": 2026,
     "mes": "Julio",
@@ -11792,7 +11814,7 @@
     "desc": "Compra de vinilo"
   },
   {
-    "id": "26-0540",
+    "id": "26-0541",
     "fecha": "2026-07-04",
     "año": 2026,
     "mes": "Julio",
@@ -11814,7 +11836,7 @@
     "desc": "Compra de vinilo"
   },
   {
-    "id": "26-0541",
+    "id": "26-0542",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11836,7 +11858,7 @@
     "desc": ""
   },
   {
-    "id": "26-0542",
+    "id": "26-0543",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11858,7 +11880,7 @@
     "desc": ""
   },
   {
-    "id": "26-0543",
+    "id": "26-0544",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11880,7 +11902,7 @@
     "desc": ""
   },
   {
-    "id": "26-0544",
+    "id": "26-0545",
     "fecha": "2026-07-05",
     "año": 2026,
     "mes": "Julio",
@@ -11902,7 +11924,7 @@
     "desc": "Cuota julio"
   },
   {
-    "id": "26-0545",
+    "id": "26-0546",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -11924,7 +11946,7 @@
     "desc": "Última cuota entrada Hernán Cattaneo"
   },
   {
-    "id": "26-0546",
+    "id": "26-0547",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -11946,7 +11968,7 @@
     "desc": ""
   },
   {
-    "id": "26-0547",
+    "id": "26-0548",
     "fecha": "2026-07-19",
     "año": 2026,
     "mes": "Julio",
@@ -11968,7 +11990,7 @@
     "desc": ""
   },
   {
-    "id": "26-0548",
+    "id": "26-0549",
     "fecha": "2026-07-27",
     "año": 2026,
     "mes": "Julio",
@@ -11987,10 +12009,10 @@
     "fuente": "bot",
     "ref_banco": "",
     "estado": "Conciliado",
-    "desc": "Sesión de $50.000 total, corregido al monto completo (antes se había cargado solo el resto de $25.000)."
+    "desc": "Sesión de $50.000 total, corregido a monto completo (antes se había cargado solo el resto de $25.000)."
   },
   {
-    "id": "26-0549",
+    "id": "26-0550",
     "fecha": "2026-07-03",
     "año": 2026,
     "mes": "Julio",
@@ -12012,7 +12034,7 @@
     "desc": ""
   },
   {
-    "id": "26-0550",
+    "id": "26-0551",
     "fecha": "2026-07-24",
     "año": 2026,
     "mes": "Julio",
@@ -12034,7 +12056,7 @@
     "desc": ""
   },
   {
-    "id": "26-0551",
+    "id": "26-0552",
     "fecha": "2026-07-24",
     "año": 2026,
     "mes": "Julio",
@@ -12056,7 +12078,7 @@
     "desc": "Cena/parrilla con Mica; ella reintegró $50.000 después (ver MercadoPago)"
   },
   {
-    "id": "26-0552",
+    "id": "26-0553",
     "fecha": "2026-07-29",
     "año": 2026,
     "mes": "Julio",
@@ -12078,7 +12100,7 @@
     "desc": "Transferencia a una amiga por el pago de una comida"
   },
   {
-    "id": "26-0553",
+    "id": "26-0554",
     "fecha": "2026-07-27",
     "año": 2026,
     "mes": "Julio",
@@ -12100,7 +12122,7 @@
     "desc": ""
   },
   {
-    "id": "26-0554",
+    "id": "26-0555",
     "fecha": "2026-07-26",
     "año": 2026,
     "mes": "Julio",
@@ -12122,7 +12144,7 @@
     "desc": "Pago de Marie por parte del auto y otros gastos de junio"
   },
   {
-    "id": "26-0555",
+    "id": "26-0556",
     "fecha": "2026-07-26",
     "año": 2026,
     "mes": "Julio",
@@ -12144,7 +12166,7 @@
     "desc": "Marie devuelve el cargador que le compró"
   },
   {
-    "id": "26-0556",
+    "id": "26-0557",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -12166,7 +12188,7 @@
     "desc": "Compró USD 860,93 a $1.509,99"
   },
   {
-    "id": "26-0557",
+    "id": "26-0558",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -12188,7 +12210,7 @@
     "desc": "15% de ahorro/bonificación promo Farmacity"
   },
   {
-    "id": "26-0558",
+    "id": "26-0559",
     "fecha": "2026-07-07",
     "año": 2026,
     "mes": "Julio",
@@ -12210,7 +12232,7 @@
     "desc": "Interés descubierto + IVA + sellos + ley 25.413, neto de interés a favor"
   },
   {
-    "id": "26-0559",
+    "id": "26-0560",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -12232,7 +12254,7 @@
     "desc": "Reclasificado de 'Salud' a 'Actividades' — avisar si no corresponde"
   },
   {
-    "id": "26-0560",
+    "id": "26-0561",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -12254,7 +12276,7 @@
     "desc": "Pagado por QR; Marie lo reintegró al día siguiente"
   },
   {
-    "id": "26-0561",
+    "id": "26-0562",
     "fecha": "2026-07-24",
     "año": 2026,
     "mes": "Julio",
@@ -12276,7 +12298,7 @@
     "desc": ""
   },
   {
-    "id": "26-0562",
+    "id": "26-0563",
     "fecha": "2026-07-19",
     "año": 2026,
     "mes": "Julio",
@@ -12298,7 +12320,7 @@
     "desc": "Split de pago conjunto $41.500 a Mati (corte + hamburguesa)"
   },
   {
-    "id": "26-0563",
+    "id": "26-0564",
     "fecha": "2026-07-19",
     "año": 2026,
     "mes": "Julio",
@@ -12320,7 +12342,7 @@
     "desc": "Split de pago conjunto $41.500 a Mati (corte + hamburguesa)"
   },
   {
-    "id": "26-0564",
+    "id": "26-0565",
     "fecha": "2026-07-13",
     "año": 2026,
     "mes": "Julio",
@@ -12342,7 +12364,7 @@
     "desc": ""
   },
   {
-    "id": "26-0565",
+    "id": "26-0566",
     "fecha": "2026-07-13",
     "año": 2026,
     "mes": "Julio",
@@ -12364,7 +12386,7 @@
     "desc": "Almuerzo con amigos ~09-10/07"
   },
   {
-    "id": "26-0566",
+    "id": "26-0567",
     "fecha": "2026-07-12",
     "año": 2026,
     "mes": "Julio",
@@ -12386,7 +12408,7 @@
     "desc": "Almuerzo con amigos ~09-10/07"
   },
   {
-    "id": "26-0567",
+    "id": "26-0568",
     "fecha": "2026-07-10",
     "año": 2026,
     "mes": "Julio",
@@ -12408,7 +12430,7 @@
     "desc": "~50% de la cena del 09/07"
   },
   {
-    "id": "26-0568",
+    "id": "26-0569",
     "fecha": "2026-07-10",
     "año": 2026,
     "mes": "Julio",
@@ -12430,7 +12452,7 @@
     "desc": "Compras para almuerzo con amigos"
   },
   {
-    "id": "26-0569",
+    "id": "26-0570",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -12452,7 +12474,7 @@
     "desc": "Compras para almuerzo con amigos"
   },
   {
-    "id": "26-0570",
+    "id": "26-0571",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -12474,7 +12496,7 @@
     "desc": "Compras para almuerzo con amigos"
   },
   {
-    "id": "26-0571",
+    "id": "26-0572",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -12496,7 +12518,7 @@
     "desc": ""
   },
   {
-    "id": "26-0572",
+    "id": "26-0573",
     "fecha": "2026-07-09",
     "año": 2026,
     "mes": "Julio",
@@ -12518,7 +12540,7 @@
     "desc": "Luka reintegró ~50% al día siguiente"
   },
   {
-    "id": "26-0573",
+    "id": "26-0574",
     "fecha": "2026-07-08",
     "año": 2026,
     "mes": "Julio",
@@ -12540,7 +12562,7 @@
     "desc": ""
   },
   {
-    "id": "26-0574",
+    "id": "26-0575",
     "fecha": "2026-07-07",
     "año": 2026,
     "mes": "Julio",
@@ -12562,7 +12584,7 @@
     "desc": ""
   },
   {
-    "id": "26-0575",
+    "id": "26-0576",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -12584,7 +12606,7 @@
     "desc": "Usuario no recuerda de qué es"
   },
   {
-    "id": "26-0576",
+    "id": "26-0577",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -12606,7 +12628,7 @@
     "desc": "Parte en negro del sueldo"
   },
   {
-    "id": "26-0577",
+    "id": "26-0578",
     "fecha": "2026-07-06",
     "año": 2026,
     "mes": "Julio",
@@ -12628,7 +12650,7 @@
     "desc": "Parte en negro del sueldo"
   },
   {
-    "id": "26-0578",
+    "id": "26-0579",
     "fecha": "2026-07-31",
     "año": 2026,
     "mes": "Julio",
@@ -12650,7 +12672,7 @@
     "desc": "Suma de 17 acreditaciones diarias chicas de rendimiento de la cuenta remunerada"
   },
   {
-    "id": "26-0579",
+    "id": "26-0580",
     "fecha": "2026-07-25",
     "año": 2026,
     "mes": "Julio",
@@ -12672,7 +12694,7 @@
     "desc": "Reintegro de compañeros de partido; el resto ($12.000) fue tu parte real del gasto. Fecha estimada = misma que el gasto, confirmar."
   },
   {
-    "id": "26-0580",
+    "id": "26-0581",
     "fecha": "2026-07-30",
     "año": 2026,
     "mes": "Julio",
@@ -12694,7 +12716,7 @@
     "desc": "IIBB percep-CABA 2% ($608,27) + IVA RG4240 21% ($6.386,87) del resumen Visa 2402. El DB.RG 5617 30% ($25.388,61) NO se cobró porque pagaste dentro de la ventana de exención — se evitó, no está pendiente."
   },
   {
-    "id": "26-0581",
+    "id": "26-0582",
     "fecha": "2026-08-02",
     "año": 2026,
     "mes": "Agosto",
@@ -12716,7 +12738,7 @@
     "desc": ""
   },
   {
-    "id": "26-0582",
+    "id": "26-0583",
     "fecha": "2026-08-02",
     "año": 2026,
     "mes": "Agosto",
@@ -12738,7 +12760,7 @@
     "desc": ""
   },
   {
-    "id": "26-0583",
+    "id": "26-0584",
     "fecha": "2026-08-02",
     "año": 2026,
     "mes": "Agosto",
@@ -12760,7 +12782,7 @@
     "desc": ""
   },
   {
-    "id": "26-0584",
+    "id": "26-0585",
     "fecha": "2026-08-01",
     "año": 2026,
     "mes": "Agosto",
@@ -12782,7 +12804,7 @@
     "desc": "Fecha estimada (inicio de mes, mismo patrón que julio), confirmar fecha real"
   },
   {
-    "id": "26-0585",
+    "id": "26-0586",
     "fecha": "2026-08-01",
     "año": 2026,
     "mes": "Agosto",
