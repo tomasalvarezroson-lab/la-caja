@@ -23,7 +23,7 @@ let DATA = [];
 const COL={navy:'#1A2E60',azul:'#50B3EA',ing:'#2F5FD0',egr:'#E2615A',marie:'#D6455D',usd:'#3FA98A',lime:'#7BC23E',faint:'#8A94A6',border:'#E4E8F0'};
 const CAT_COL={'Comida':'#E2615A','Vehículo':'#E89A4F','Servicios':'#50B3EA','Salud':'#3FA98A','Regalos':'#9B7ED8','Entradas/Eventos':'#2F5FD0','Educación':'#2E9B83','Supermercado':'#E8B84F','Transporte':'#6B9BD8','Deuda':'#8A93E6','Crédito/Cuotas':'#8A93E6','Ropa':'#D98A4F','Actividades':'#45B0C4','Gastos importantes':'#C96A4A','Otros':'#94A3B8','Deuda Marie':'#D6455D','Ahorro USD':'#3FA98A','Sueldo':'#2F5FD0','Bono/Extra':'#7BC23E','Reintegro':'#7BC23E','Préstamo recibido':'#F0875C'};
 const NO_CONSUMO=['Deuda Marie','Ahorro USD'];
-const NO_ING=['Reintegro','Préstamo recibido'];
+const NO_ING=['Reintegro','Préstamo recibido','Ahorro USD'];
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 const state={sAño:new Set([2026]),sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc',compMesA:null,compMesB:null};
