@@ -10912,7 +10912,7 @@
     "desc": "ref banco 689269 (conciliación manual, agregar al Sheet) - VER: monto sin dividir 50%?"
   },
   {
-    "id": "26-0591",
+    "id": "26-0501",
     "fecha": "2026-06-20",
     "año": 2026,
     "mes": "Junio",
@@ -12846,49 +12846,5 @@
     "ref_banco": "",
     "estado": "Conciliado",
     "desc": "Contrapartida en USD de la compra de dólares del 06/07. Excluido del KPI de Ingresos en el dashboard (no es ingreso real, es conversión de activo)."
-  },
-  {
-    "id": "26-0589",
-    "fecha": "2026-08-03",
-    "año": 2026,
-    "mes": "Agosto",
-    "hora": "",
-    "tipo": "Egreso",
-    "cat": "Ahorro USD",
-    "subcat": "Ahorro USD",
-    "concepto": "Compra de dólares",
-    "contraparte": "",
-    "monto": 500000.0,
-    "divisa": "ARS",
-    "medio": "Santander - Caja Ahorro USD",
-    "cuotaN": "",
-    "cuotaT": "",
-    "reint": "No",
-    "fuente": "manual",
-    "ref_banco": "",
-    "estado": "Pendiente",
-    "desc": "Compró USD 331 a ~$1.511,18"
-  },
-  {
-    "id": "26-0590",
-    "fecha": "2026-08-03",
-    "año": 2026,
-    "mes": "Agosto",
-    "hora": "",
-    "tipo": "Ingreso",
-    "cat": "Ahorro USD",
-    "subcat": "Ahorro USD",
-    "concepto": "Ingreso USD por compra de dólares",
-    "contraparte": "",
-    "monto": 331.0,
-    "divisa": "USD",
-    "medio": "Santander - Caja Ahorro USD",
-    "cuotaN": "",
-    "cuotaT": "",
-    "reint": "No",
-    "fuente": "manual",
-    "ref_banco": "",
-    "estado": "Pendiente",
-    "desc": "Contrapartida en USD de la compra 26-0589. Excluido del KPI de Ingresos (no es ingreso real, es conversión de activo)."
   }
 ]
