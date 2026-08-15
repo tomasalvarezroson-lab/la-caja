@@ -15,15 +15,23 @@ Se usan para:
 
 Si se agregan categorías nuevas de este tipo, actualizar `NO_CONSUMO` en `app.js`.
 
-## Vehículo al 50%
+## Vehículo al 50% (regla vigente hasta 2026-08-15)
 
-Toda la categoría `Vehículo` (nafta, peajes, seguro, patente, parking, etc.)
-está cargada ya con el monto al 50% — Marie paga la otra mitad de TODO lo
-relacionado al auto. Esto se aplicó en los datos, no es un cálculo del
-dashboard. Si se carga un gasto de Vehículo nuevo a mano, cargar ya la mitad.
+Los registros de `Vehículo` cargados **hasta el 2026-08-15** (nafta, peajes,
+seguro, patente, parking, etc.) están cargados ya con el monto al 50% —
+Marie paga la otra mitad de TODO lo relacionado al auto. Esto se aplicó
+directo en los datos, no es un cálculo del dashboard.
 
-El bot (ContaBot) NO aplica esta regla automáticamente — el usuario debe
-cargar el monto ya divivido, o se ajusta manualmente después en el Sheet.
+**Cambio de convención desde el 2026-08-15:** a partir de esta fecha, los
+gastos de `Vehículo` se cargan por el **monto total** pagado (`reint: "Si"`
+para marcar que corresponde reintegro). Cuando Marie efectivamente devuelve
+su mitad, ese reintegro se carga como un movimiento de `Ingreso` aparte —
+no se resta ni se anticipa en el momento de cargar el gasto. No dividir el
+monto a la mitad al cargar el gasto original.
+
+El bot (ContaBot) no aplica ninguna de estas reglas automáticamente — hay
+que cargar el monto correcto a mano (total, no dividido) y, más adelante,
+el ingreso del reintegro de Marie cuando corresponda.
 
 ## Ingresos excluidos del KPI "Ingresos"
 
