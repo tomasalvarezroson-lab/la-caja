@@ -1,8 +1,13 @@
 name: Actualizar data.json desde Google Sheets
 
+# PAUSADO desde 2026-09-14: el sync pisaba (no combinaba) data.json entero,
+# borrando los movimientos cargados a mano que no estaban también en el
+# Sheet (pasó con varias cargas de agosto). Para reactivar, descomentar el
+# bloque "schedule" de abajo — pero antes cargar en el Sheet todo lo que se
+# agregó a mano mientras estuvo pausado, o se va a volver a borrar.
 on:
-  schedule:
-    - cron: '0 9,21 * * *'   # 06:00 y 18:00 hora Argentina (UTC-3)
+  # schedule:
+  #   - cron: '0 9,21 * * *'   # 06:00 y 18:00 hora Argentina (UTC-3)
   workflow_dispatch:           # también se puede disparar a mano desde GitHub
 
 permissions:
