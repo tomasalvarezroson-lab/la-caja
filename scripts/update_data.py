@@ -11,6 +11,11 @@ ID, Fecha, Hora, Mes, Tipo, Categoría, Subcat (orig), Concepto / Comercio,
 Contraparte, Monto, Divisa, Medio de Pago, Cuota N, Cuota Tot,
 Reintegrable, Asociado a, Estado, Descripción
 
+Desde el cierre de septiembre 2026 el Sheet puede traer dos columnas más,
+Bloque (Recurrente / Mudanza (one-off) / Ingreso / Reintegro) y % Seguridad
+(ver docs/decisiones-datos.md). Son opcionales: si no están, se omiten del
+output y el dashboard las deriva en runtime (getBloque() en app.js).
+
 Cómo exportar desde Google Sheets:
   Archivo → Descargar → Valores separados por comas (.csv)
   (asegurate de estar parado en la pestaña "Registro 2026")
@@ -75,7 +80,7 @@ def main(csv_path: str):
         if not idv:
             continue
         fecha_iso, año, mes = parse_fecha(r.get("Fecha", ""))
-        out.append({
+        row = {
             "id": idv,
             "fecha": fecha_iso,
             "año": año,
@@ -96,7 +101,17 @@ def main(csv_path: str):
             "ref_banco": "",
             "estado": (r.get("Estado") or "").strip(),
             "desc": (r.get("Descripción") or "").strip(),
-        })
+        }
+        bloque = (r.get("Bloque") or "").strip()
+        if bloque:
+            row["bloque"] = bloque
+        seguridad = (r.get("% Seguridad") or "").strip()
+        if seguridad:
+            try:
+                row["seguridad"] = int(float(seguridad))
+            except ValueError:
+                pass
+        out.append(row)
 
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"OK: {len(out)} movimientos -> {OUT}")

@@ -21,10 +21,18 @@ checkGate();
 let DATA = [];
 
 const COL={navy:'#1A2E60',azul:'#50B3EA',ing:'#2F5FD0',egr:'#E2615A',marie:'#D6455D',usd:'#3FA98A',lime:'#7BC23E',faint:'#8A94A6',border:'#E4E8F0'};
-const CAT_COL={'Comida':'#E2615A','Vehículo':'#E89A4F','Servicios':'#50B3EA','Salud':'#3FA98A','Regalos':'#9B7ED8','Entradas/Eventos':'#2F5FD0','Educación':'#2E9B83','Supermercado':'#E8B84F','Transporte':'#6B9BD8','Deuda':'#8A93E6','Crédito/Cuotas':'#8A93E6','Ropa':'#D98A4F','Actividades':'#45B0C4','Gastos importantes':'#C96A4A','Otros':'#94A3B8','Deuda Marie':'#D6455D','Ahorro USD':'#3FA98A','Sueldo':'#2F5FD0','Bono/Extra':'#7BC23E','Reintegro':'#7BC23E','Préstamo recibido':'#F0875C'};
+const CAT_COL={'Comida':'#E2615A','Vehículo':'#E89A4F','Servicios':'#50B3EA','Salud':'#3FA98A','Regalos':'#9B7ED8','Entradas/Eventos':'#2F5FD0','Educación':'#2E9B83','Supermercado':'#E8B84F','Transporte':'#6B9BD8','Deuda':'#8A93E6','Crédito/Cuotas':'#8A93E6','Ropa':'#D98A4F','Actividades':'#45B0C4','Gastos importantes':'#C96A4A','Otros':'#94A3B8','Deuda Marie':'#D6455D','Ahorro USD':'#3FA98A','Sueldo':'#2F5FD0','Bono/Extra':'#7BC23E','Reintegro':'#7BC23E','Préstamo recibido':'#F0875C','Vivienda':'#4F7CC9','Mudanza':'#C96A4A'};
 const NO_CONSUMO=['Deuda Marie','Ahorro USD'];
 const NO_ING=['Reintegro','Préstamo recibido','Ahorro USD'];
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MUDANZA='Mudanza (one-off)';
+// Bloque: Recurrente | Mudanza (one-off) | Ingreso | Reintegro. Filas previas a septiembre
+// 2026 no tienen el campo — se deriva acá (ver handoff_dashboard_septiembre_2026.md §3).
+function getBloque(d){
+  if(d.bloque)return d.bloque;
+  if(d.tipo==='Ingreso')return (d.cat==='Reintegro'||d.cat==='Préstamo recibido')?'Reintegro':'Ingreso';
+  return 'Recurrente';
+}
 
 const state={sAño:new Set([2026]),sMes:new Set(),tipo:'todos',sCat:new Set(),sMed:new Set(),q:'',dDesde:'',dHasta:'',sortK:'fecha',sortDir:'desc',compMesA:null,compMesB:null};
 let chBar,chDonut,chEvo;
@@ -50,11 +58,21 @@ function getFil(){
   });
 }
 function agg(rows){
-  let ing=0,gastos=0,marie=0,usd=0;
-  rows.forEach(d=>{const x=pm(d.monto);
-    if(d.tipo==='Ingreso'){if(!NO_ING.includes(d.cat))ing+=x;}
-    else{if(d.cat==='Deuda Marie')marie+=x;else if(d.cat==='Ahorro USD')usd+=x;else gastos+=x;}});
-  return {ing,gastos,marie,usd,tasa:ing?(marie+usd)/ing*100:0};
+  let ing=0,gastos=0,marie=0,usd=0,reintegros=0,mudanza=0;
+  rows.forEach(d=>{const x=pm(d.monto),b=getBloque(d);
+    if(d.tipo==='Ingreso'){
+      if(b==='Reintegro')reintegros+=x;
+      else if(b!==MUDANZA&&!NO_ING.includes(d.cat))ing+=x;
+    } else {
+      if(b===MUDANZA)mudanza+=x;
+      else if(d.cat==='Deuda Marie')marie+=x;
+      else if(d.cat==='Ahorro USD')usd+=x;
+      else gastos+=x;
+    }});
+  const gastosNeto=gastos-reintegros;
+  const resultadoOperativo=ing-gastosNeto;
+  const resultadoTotal=resultadoOperativo-mudanza;
+  return {ing,gastos,marie,usd,reintegros,mudanza,gastosNeto,resultadoOperativo,resultadoTotal,tasa:ing?(marie+usd)/ing*100:0};
 }
 
 /* ---------- FILTER UI ---------- */
@@ -126,12 +144,25 @@ function renderKpis(rows){
   document.getElementById('kMarie').textContent=fmt(a.marie);
   document.getElementById('kUsd').textContent=fmt(a.usd);
   document.getElementById('kTasa').textContent=a.tasa.toFixed(0)+'%';
+
+  // Mudanza: solo se muestra cuando hay gasto de ese bloque en el período filtrado.
+  const row=document.getElementById('mudanzaRow');
+  if(a.mudanza>0){
+    row.style.display='';
+    document.getElementById('kRec').textContent=fmt(a.gastosNeto);
+    document.getElementById('kRecH').textContent='bruto '+fmt(a.gastos)+' · reintegros '+fmt(a.reintegros);
+    document.getElementById('kMud').textContent=fmt(a.mudanza);
+    document.getElementById('kResOp').textContent=fmt(a.resultadoOperativo)+(a.ing?' ('+(a.resultadoOperativo/a.ing*100).toFixed(1)+'%)':'');
+    document.getElementById('kResTot').textContent=fmt(a.resultadoTotal);
+  } else {
+    row.style.display='none';
+  }
 }
 
 /* ---------- SMART ALERTS ---------- */
 function renderAlerts(rows){
   const bar=document.getElementById('alertsRow');
-  const eRows=rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat));
+  const eRows=rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)&&getBloque(d)!==MUDANZA);
   const monthsWithData=MESES.filter(m=>eRows.some(d=>d.mes===m));
   const alerts=[];
 
@@ -213,7 +244,7 @@ function renderBar(rows){
 /* ---------- CHART 2: donut ---------- */
 function renderDonut(rows){
   const byCat={};
-  rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)).forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+pm(d.monto));
+  rows.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)&&getBloque(d)!==MUDANZA).forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+pm(d.monto));
   const ents=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const labels=ents.map(e=>e[0]),vals=ents.map(e=>e[1]),cols=labels.map(c=>CAT_COL[c]||'#94A3B8');
   const total=vals.reduce((s,v)=>s+v,0);
@@ -245,7 +276,7 @@ function renderEvo(rows){
 function renderComparacion(){
   const card=document.getElementById('compCard');
   const yearData=DATA.filter(d=>!state.sAño.size||state.sAño.has(d.año));
-  const eRows=yearData.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat));
+  const eRows=yearData.filter(d=>d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)&&getBloque(d)!==MUDANZA);
   const monthsWithData=MESES.filter(m=>eRows.some(d=>d.mes===m));
   if(monthsWithData.length<2){card.style.display='none';return;}
   card.style.display='';
@@ -329,11 +360,11 @@ function renderAll(){
 /* ---------- INSIGHTS (snapshot) ---------- */
 function snapshot(){
   const s={byCat:{},byMonth:{},ts:Date.now()};let ing=0,gastos=0,marie=0,usd=0;
-  DATA.forEach(d=>{const x=pm(d.monto);
-    if(d.tipo==='Ingreso'){if(!NO_ING.includes(d.cat))ing+=x;}
-    else{if(d.cat==='Deuda Marie')marie+=x;else if(d.cat==='Ahorro USD')usd+=x;else{gastos+=x;s.byCat[d.cat]=(s.byCat[d.cat]||0)+x;}}});
+  DATA.forEach(d=>{const x=pm(d.monto),b=getBloque(d);
+    if(d.tipo==='Ingreso'){if(b!==MUDANZA&&!NO_ING.includes(d.cat))ing+=x;}
+    else if(b!==MUDANZA){if(d.cat==='Deuda Marie')marie+=x;else if(d.cat==='Ahorro USD')usd+=x;else{gastos+=x;s.byCat[d.cat]=(s.byCat[d.cat]||0)+x;}}});
   s.ing=ing;s.gastos=gastos;s.marie=marie;s.usd=usd;
-  MESES.forEach(m=>{s.byMonth[m]=DATA.filter(d=>d.mes===m&&d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)).reduce((a,d)=>a+pm(d.monto),0);});
+  MESES.forEach(m=>{s.byMonth[m]=DATA.filter(d=>d.mes===m&&d.tipo==='Egreso'&&!NO_CONSUMO.includes(d.cat)&&getBloque(d)!==MUDANZA).reduce((a,d)=>a+pm(d.monto),0);});
   return s;
 }
 function pctDelta(cur,prev){if(!prev)return null;if(prev===0)return cur>0?100:0;return (cur-prev)/prev*100;}

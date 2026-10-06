@@ -57,6 +57,58 @@ histórica, o documentar el tipo de cambio usado si cambia.
 Saldo deuda a fin de marzo: ~USD 1.000 (según Proyecto_Independizarme.txt,
 capacidad de pago USD 200/mes).
 
+## Bloque: Recurrente / Mudanza (one-off) / Ingreso / Reintegro (desde sept. 2026)
+
+Desde el cierre de septiembre 2026 (mudanza al depto nuevo) cada fila puede
+tener un campo `bloque`. Dice si el movimiento es gasto/ingreso **operativo**
+("ritmo de crucero") o si es parte del **fondo de mudanza** (compras únicas
+de ingreso al depto, financiadas aparte, que no deben ensuciar la tasa de
+ahorro ni los promedios mensuales). Valores:
+
+- `Recurrente`: egreso de consumo normal.
+- `Mudanza (one-off)`: egreso o ingreso ligado al fondo de mudanza (depósito,
+  muebles, equipamiento, regalos/aportes recibidos para financiarla, etc.).
+  Se excluye tanto de "Gastos de consumo" como de "Ingresos" — ver `agg()`
+  en `app.js`. Esto es intencional: `Categoría` dice **qué** es el gasto
+  (p. ej. `Supermercado` para una compra grande de stock inicial), `Bloque`
+  dice si **cuenta** para el ritmo normal del mes.
+- `Ingreso`: ingreso operativo (sueldo, bono, rendimientos).
+- `Reintegro`: entra como `reintegros` y neta contra "Gasto recurrente" en
+  vez de sumar a "Ingresos" (`gastosNeto = gastos - reintegros` en `agg()`).
+
+Las filas de antes de septiembre 2026 no tienen este campo. `getBloque(d)`
+en `app.js` lo deriva en runtime (no se reescribió el histórico):
+`Ingreso` + cat `Reintegro`/`Préstamo recibido` → `Reintegro`; cualquier
+otro `Ingreso` → `Ingreso`; cualquier `Egreso` → `Recurrente`. Si se agrega
+un bloque `Mudanza (one-off)` a una fila vieja a mano, hay que hacerlo
+explícito en el dato (no hay forma de derivarlo retroactivamente sin
+revisar cada fila).
+
+Las tarjetas KPI "Gasto recurrente / Mudanza (one-off) / Resultado
+operativo / Resultado total" (`#mudanzaRow` en `index.html`) solo se
+muestran cuando el período filtrado tiene gasto con `bloque=Mudanza
+(one-off)` — si no, el dashboard se ve exactamente igual que antes.
+
+Ver `handoff_dashboard_septiembre_2026.md` (fuera del repo, en los chats de
+cierre mensual) para el detalle fila por fila del cierre de septiembre.
+
+## Categorías Vivienda y Mudanza (desde sept. 2026)
+
+- `Vivienda`: alquiler, expensas, internet/cable, seguro del hogar.
+- `Mudanza`: gasto puntual de ingreso al depto que no entra en otra
+  categoría de consumo normal (depósito, muebles, ferretería/hogar,
+  cortinas, flete). Las compras grandes de supermercado para el stock
+  inicial quedan con `cat=Supermercado` + `bloque=Mudanza (one-off)` (ver
+  sección anterior) en vez de `cat=Mudanza`, para no inflar "Mudanza" con
+  algo que en los hechos es súper.
+
+## % Seguridad (desde sept. 2026)
+
+Campo nuevo, no usado todavía por el dashboard (no hay tab "Datos"):
+confianza de la categorización/import de cada fila. `< 70` → descripción
+con `[REVISAR xx%]`; `< 60` → `estado = "Pendiente"`. Nunca se asigna una
+categoría con alta seguridad a algo que no se pudo identificar.
+
 ## Categoría "Otros" pendiente
 
 A la fecha de armado del dataset (423 movs), quedan ~65 egresos en "Otros"
