@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="./styles.css?v=5">
+<link rel="stylesheet" href="./styles.css?v=6">
 </head>
 <body>
 <!-- GATE -->
@@ -48,19 +48,11 @@
 
   <!-- KPIs -->
   <div class="kpis">
-    <div class="kpi k-ing"><div class="lab">Ingresos</div><div class="val" id="kIng">—</div><div class="hint">sin reintegros / préstamos</div></div>
+    <div class="kpi k-ing"><div class="lab">Ingresos</div><div class="val" id="kIng">—</div><div class="hint" id="kIngH">—</div></div>
     <div class="kpi k-gas"><div class="lab">Gastos de consumo</div><div class="val" id="kGas">—</div><div class="hint" id="kGasH">—</div></div>
     <div class="kpi k-marie"><div class="lab">Deuda Marie pagada</div><div class="val" id="kMarie">—</div><div class="hint">en dólares</div></div>
     <div class="kpi k-usd"><div class="lab">Compra de dólares</div><div class="val" id="kUsd">—</div><div class="hint">dolarización / ahorro</div></div>
     <div class="kpi k-tasa"><div class="lab">Tasa de ahorro</div><div class="val" id="kTasa">—</div><div class="hint">(Marie + USD) / ingresos</div></div>
-  </div>
-
-  <!-- MUDANZA (one-off) — aparece solo si el período filtrado tiene gasto de ese bloque -->
-  <div class="kpis kpis-mudanza" id="mudanzaRow" style="display:none">
-    <div class="kpi k-ing"><div class="lab">Gasto recurrente</div><div class="val" id="kRec">—</div><div class="hint" id="kRecH">—</div></div>
-    <div class="kpi k-mud"><div class="lab">Mudanza (one-off)</div><div class="val" id="kMud">—</div><div class="hint">ingreso al depto · no entra en tasa de ahorro</div></div>
-    <div class="kpi k-tasa"><div class="lab">Resultado operativo</div><div class="val" id="kResOp">—</div><div class="hint">ingresos − gasto recurrente neto</div></div>
-    <div class="kpi k-gas"><div class="lab">Resultado total</div><div class="val" id="kResTot">—</div><div class="hint">operativo − mudanza</div></div>
   </div>
 
   <!-- SMART ALERTS -->
@@ -137,6 +129,6 @@
 
   <div class="foot">La Caja · datos Ene–Sep 2026 · conciliado contra resúmenes Santander + Mercado Pago · montos en ARS (USD @ $1.420)</div>
 </div>
-<script src="./app.js?v=6"></script>
+<script src="./app.js?v=7"></script>
 </body>
 </html>

@@ -57,40 +57,43 @@ histórica, o documentar el tipo de cambio usado si cambia.
 Saldo deuda a fin de marzo: ~USD 1.000 (según Proyecto_Independizarme.txt,
 capacidad de pago USD 200/mes).
 
-## Bloque: Recurrente / Mudanza (one-off) / Ingreso / Reintegro (desde sept. 2026)
+## El dashboard NO esconde plata (regla de oro, 07/10/2026)
 
-Desde el cierre de septiembre 2026 (mudanza al depto nuevo) cada fila puede
-tener un campo `bloque`. Dice si el movimiento es gasto/ingreso **operativo**
-("ritmo de crucero") o si es parte del **fondo de mudanza** (compras únicas
-de ingreso al depto, financiadas aparte, que no deben ensuciar la tasa de
-ahorro ni los promedios mensuales). Valores:
+El propósito del tablero es simple: **cuánto entró, cuánto gasté, en qué
+gasté**. Ninguna tarjeta ni gráfico debe excluir del total un movimiento
+real porque sea "extraordinario", "one-off" o "no operativo". Si un mes se
+ve raro por un gasto o ingreso puntual, eso es información, no un problema
+a corregir en el cálculo.
 
-- `Recurrente`: egreso de consumo normal.
-- `Mudanza (one-off)`: egreso o ingreso ligado al fondo de mudanza (depósito,
-  muebles, equipamiento, regalos/aportes recibidos para financiarla, etc.).
-  Se excluye tanto de "Gastos de consumo" como de "Ingresos" — ver `agg()`
-  en `app.js`. Esto es intencional: `Categoría` dice **qué** es el gasto
-  (p. ej. `Supermercado` para una compra grande de stock inicial), `Bloque`
-  dice si **cuenta** para el ritmo normal del mes.
-- `Ingreso`: ingreso operativo (sueldo, bono, rendimientos).
-- `Reintegro`: entra como `reintegros` y neta contra "Gasto recurrente" en
-  vez de sumar a "Ingresos" (`gastosNeto = gastos - reintegros` en `agg()`).
+**Por qué está escrito acá:** en el cierre de septiembre 2026 se agregó una
+lógica que sacaba del KPI de Ingresos el regalo de mudanza de Marie
+($4.300.000) y del KPI de Gastos todo el bloque de mudanza ($4,1M). El
+resultado fue que agosto perdía su ingreso más grande y septiembre su gasto
+más grande, y el tablero dejaba de servir para lo que se hizo. Se revirtió.
 
-Las filas de antes de septiembre 2026 no tienen este campo. `getBloque(d)`
-en `app.js` lo deriva en runtime (no se reescribió el histórico):
-`Ingreso` + cat `Reintegro`/`Préstamo recibido` → `Reintegro`; cualquier
-otro `Ingreso` → `Ingreso`; cualquier `Egreso` → `Recurrente`. Si se agrega
-un bloque `Mudanza (one-off)` a una fila vieja a mano, hay que hacerlo
-explícito en el dato (no hay forma de derivarlo retroactivamente sin
-revisar cada fila).
+**Cómo aplicarlo:** antes de agregar cualquier exclusión a `agg()`,
+`renderDonut()`, `renderAlerts()` o `snapshot()` en `app.js`, preguntarse si
+esconde plata que realmente se movió. Si la respuesta es sí, no va: mostrar
+el número completo y, si hace falta contexto, agregarlo como dato visible
+al lado (un hint, una tarjeta más), nunca restándolo del total.
 
-Las tarjetas KPI "Gasto recurrente / Mudanza (one-off) / Resultado
-operativo / Resultado total" (`#mudanzaRow` en `index.html`) solo se
-muestran cuando el período filtrado tiene gasto con `bloque=Mudanza
-(one-off)` — si no, el dashboard se ve exactamente igual que antes.
+Las únicas exclusiones vigentes, todas con la plata visible en otra tarjeta
+o por ser otra moneda:
 
-Ver `handoff_dashboard_septiembre_2026.md` (fuera del repo, en los chats de
-cierre mensual) para el detalle fila por fila del cierre de septiembre.
+| Qué | Dónde no entra | Por qué |
+|---|---|---|
+| `Deuda Marie`, `Ahorro USD` (egresos) | KPI "Gastos de consumo", donut | Tienen tarjeta propia ("Deuda Marie pagada" / "Compra de dólares") |
+| `Reintegro`, `Préstamo recibido` (ingresos) | KPI "Ingresos" | Se muestran como hint abajo de Ingresos ("+ $X de reintegros"). No suman porque el gasto que los originó ya está contado completo |
+| `Ahorro USD` tipo Ingreso | todo | Son la contrapartida **en USD** de una compra de dólares (`divisa: USD`), no pesos que entraron |
+
+## Campo `bloque` (etiqueta informativa, no afecta ningún cálculo)
+
+Las filas desde septiembre 2026 traen `bloque` (`Recurrente` /
+`Mudanza (one-off)` / `Ingreso` / `Reintegro`), heredado del cierre mensual.
+Sirve para poder responder "¿cuánto de esto fue la mudanza?" consultando el
+dato, y nada más: **`app.js` no lo lee**. Si algún día se quiere usar, que
+sea para agregar una vista nueva, no para restar de los totales existentes
+(ver regla de oro arriba).
 
 ## Categorías Vivienda y Mudanza (desde sept. 2026)
 
@@ -108,6 +111,31 @@ Campo nuevo, no usado todavía por el dashboard (no hay tab "Datos"):
 confianza de la categorización/import de cada fila. `< 70` → descripción
 con `[REVISAR xx%]`; `< 60` → `estado = "Pendiente"`. Nunca se asigna una
 categoría con alta seguridad a algo que no se pudo identificar.
+
+## Deuda técnica conocida en los datos (auditoría 07/10/2026)
+
+Cosas que hacen que el tablero subestime o distorsione el gasto. No están
+arregladas; si se arreglan, actualizar esta lista.
+
+1. **Suscripciones de junio y julio cargadas en USD sin pesificar.** 15
+   filas (`26-0470`..`26-0531`) tienen `divisa: "USD"` y montos como `20` o
+   `9.99`. El dashboard las suma como si fueran pesos, así que `Servicios`
+   de junio está ~$95.000 abajo y julio ~$85.000 abajo. Desde agosto las
+   suscripciones se cargan ya pesificadas (agosto @1.515, septiembre
+   @1.530), así que el problema es solo de esos dos meses.
+2. **Cuotas de tarjeta: solo se cargó la primera cuota de cada compra.**
+   Jun/jul/ago tienen $0 en `Crédito/Cuotas` y septiembre $139.123 (4
+   cuotas tomadas del resumen). No es un gasto nuevo de septiembre: existía
+   antes y no estaba cargado. La comparación mes a mes de esa categoría no
+   sirve hasta que se complete el histórico.
+3. **`Vehículo` cambia de criterio a mitad de año.** Ene–jun está cargado
+   al 50% (Marie pagaba la mitad en el momento); desde el 15/08 se carga el
+   100% y el reintegro entra aparte. La serie no es comparable en el corte.
+4. **Posible duplicado sin resolver:** `26-0614` y `26-0591`, $50.000 cada
+   una, reserva del depto (14 y 15/08). Ambas marcadas en su `desc`, falta
+   confirmar cuál sobra.
+5. **Expensas de septiembre ($125.000) no aparecen en ningún extracto** —
+   no están cargadas.
 
 ## Categoría "Otros" pendiente
 

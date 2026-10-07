@@ -12801,7 +12801,7 @@
     "fuente": "bot",
     "ref_banco": "",
     "estado": "Conciliado",
-    "desc": "Contrapartida en USD de la compra de dólares del 06/07. Excluido del KPI de Ingresos en el dashboard (no es ingreso real, es conversión de activo)."
+    "desc": "Contrapartida en USD de la compra de dólares del 06/07. Monto en USD (no ARS): es la contrapartida de la compra de dólares, no plata que entró. No suma a ningún KPI."
   },
   {
     "id": "26-0588",
@@ -12934,7 +12934,7 @@
     "fuente": "manual",
     "ref_banco": "",
     "estado": "Pendiente",
-    "desc": "Contrapartida en USD de la compra 26-0592. Excluido del KPI de Ingresos en el dashboard (no es ingreso real, es conversión de activo). [Fecha corregida de 2026-08-15 a 2026-08-05 tras conciliar contra el resumen Santander.]"
+    "desc": "Contrapartida en USD de la compra 26-0592. Monto en USD (no ARS): es la contrapartida de la compra de dólares, no plata que entró. No suma a ningún KPI. [Fecha corregida de 2026-08-15 a 2026-08-05 tras conciliar contra el resumen Santander.]"
   },
   {
     "id": "26-0594",
@@ -12978,7 +12978,7 @@
     "fuente": "manual",
     "ref_banco": "",
     "estado": "Pendiente",
-    "desc": "Contrapartida en USD de la compra 26-0594. Excluido del KPI de Ingresos en el dashboard (no es ingreso real, es conversión de activo). Saldo total USD informado por el usuario tras esta compra: USD 1.924."
+    "desc": "Contrapartida en USD de la compra 26-0594. Monto en USD (no ARS): es la contrapartida de la compra de dólares, no plata que entró. No suma a ningún KPI. Saldo total USD informado por el usuario tras esta compra: USD 1.924."
   },
   {
     "id": "26-0596",
@@ -13794,7 +13794,7 @@
     "fuente": "manual",
     "ref_banco": "5142636",
     "estado": "Pendiente",
-    "desc": "Regalo de Marie para la mudanza. Bloque = Mudanza (one-off): excluido del KPI de Ingresos (es fuente del fondo de mudanza, no ingreso operativo), consistente con el cierre de septiembre 2026.",
+    "desc": "Regalo de Marie para la mudanza. Es un ingreso real y cuenta como tal en el KPI de Ingresos (decisión de Toto, 07/10/2026): el dashboard muestra todo lo que entró y todo lo que salió. El campo bloque queda solo como etiqueta informativa.",
     "bloque": "Mudanza (one-off)"
   },
   {
